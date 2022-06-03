@@ -1,0 +1,28 @@
+logger:
+  format: '%(asctime)s, %(name)s: %(message)s'
+  date_format: '%d/%m/%Y %I:%M:%S %p'
+datasets:
+  abilene:
+    root: 'data/Abilene'
+    savefig_path: 'pic/Abilene'
+    topology_adjlist_file: 'graph.adjlist'
+    nodes_traffic: 'Abilene_dataset.csv'
+    edges_traffic: 'Link_counts.csv'
+    root_matrix: 'Routing_matrix.csv'
+  pemsd7:
+    root: 'data/PeMSD7'
+    url: 'https://github.com/VeritasYin/STGCN_IJCAI-18/raw/master/data_loader/PeMS-M.zip'
+    route_distances_file: 'W_228.csv'
+    speeds_file: 'V_228.csv'
+    topology_adjlist_file: 'graph.adjlist'
+    savefig_path: 'pic/PeMSD7'
+  totem:
+    root: 'data/Totem'
+    traffic: 'traffic.csv'
+    edges_traffic: 'Link_counts.csv'
+    topology_adjlist_file: 'graph.adjlist'
+    savefig_path: 'pic/Totem'
+third_party:
+  rscripts_dir: 'rscripts'
+hypothesis_testing:
+  mcleod_li_test_script_name: 'mcleod_li_test.r'
