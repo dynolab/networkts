@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pingouin as pg
 
-from sttf.utils.common import CONF
+from networkts.utils.common import CONF
 
 
 class Pemsd7Dataset:

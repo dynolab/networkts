@@ -1,8 +1,8 @@
 from prophet import Prophet
 import pandas as pd
 
-from sttf.base import BaseForecaster
-from sttf.utils.convert_time import time
+from networkts.base import BaseForecaster
+from networkts.utils.convert_time import time
 
 
 class NtsProphet(BaseForecaster):

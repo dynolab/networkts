@@ -3,7 +3,7 @@ import pandas as pd
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from scipy import stats
 
-from sttf.decompositions.ssa import SSA
+from networkts.decompositions.ssa import SSA
 
 
 def exp_smoth(data, params=None):

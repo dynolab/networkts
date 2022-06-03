@@ -6,8 +6,8 @@ from sklearn.metrics import mean_absolute_percentage_error as mape
 from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import make_scorer
 
-from sttf.base import BaseForecaster
-from sttf.utils.sklearn_helpers import SklearnWrapperForForecaster
+from networkts.base import BaseForecaster
+from networkts.utils.sklearn_helpers import SklearnWrapperForForecaster
 
 
 class ValidationBasedOnRollingForecastingOrigin:

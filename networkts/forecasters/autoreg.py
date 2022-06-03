@@ -1,4 +1,4 @@
-from sttf.base import BaseForecaster
+from networkts.base import BaseForecaster
 from statsmodels.tsa.ar_model import AutoReg
 
 

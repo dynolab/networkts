@@ -1,9 +1,9 @@
 import xgboost as xgb
 import pandas as pd
 
-from sttf.base import BaseForecaster
-from sttf.utils.convert_time import time
-from sttf.utils.create_features import create_features
+from networkts.base import BaseForecaster
+from networkts.utils.convert_time import time
+from networkts.utils.create_features import create_features
 
 
 class NtsXgboost(BaseForecaster):

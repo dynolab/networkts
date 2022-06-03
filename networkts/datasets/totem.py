@@ -8,7 +8,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sttf.utils.common import CONF
+from networkts.utils.common import CONF
 
 
 class TotemDataset:

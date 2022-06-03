@@ -5,9 +5,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sttf.datasets.base import Dataset, TimeseriesType, CovariateType
-from sttf.utils.common import inverse_dict
-from sttf.utils.plotting import DistributionSummaryPlotType
+from networkts.datasets.base import Dataset, TimeseriesType, CovariateType
+from networkts.utils.common import inverse_dict
+from networkts.utils.plotting import DistributionSummaryPlotType
 
 
 def plot_correlation_histogram(dataset: Dataset,

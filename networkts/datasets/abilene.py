@@ -8,7 +8,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 
-from sttf.utils.common import CONF
+from networkts.utils.common import CONF
 
 
 class AbileneDataset:

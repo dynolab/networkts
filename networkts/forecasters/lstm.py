@@ -1,12 +1,12 @@
 import numpy as np
-from sttf.utils.create_dataset import create_dataset
+from networkts.utils.create_dataset import create_dataset
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.layers import LSTM
 
-from sttf.base import BaseForecaster
-from sttf.utils.create_dataset import create_dataset
+from networkts.base import BaseForecaster
+from networkts.utils.create_dataset import create_dataset
 
 
 class NtsLstm(BaseForecaster):

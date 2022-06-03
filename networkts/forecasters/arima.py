@@ -1,4 +1,4 @@
-from sttf.base import BaseForecaster
+from networkts.base import BaseForecaster
 from statsmodels.tsa.arima.model import ARIMA
 
 

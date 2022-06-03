@@ -9,7 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sttf.datasets.base import Dataset, TimeseriesType, CovariateType
+from networkts.datasets.base import Dataset, TimeseriesType, CovariateType
 
 
 def plot_topology(ax: matplotlib.axes.Axes,

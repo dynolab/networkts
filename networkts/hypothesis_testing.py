@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from statsmodels.stats.diagnostic import acorr_ljungbox
 
-from sttf.utils.common import CONF, run_rscript
+from networkts.utils.common import CONF, run_rscript
 
 
 def accept_iid_based_on_multiple_p_values(p_values: np.ndarray):
