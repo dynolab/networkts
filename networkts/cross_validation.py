@@ -7,7 +7,6 @@ from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import make_scorer
 
 from networkts.base import BaseForecaster
-from networkts.utils.sklearn_helpers import SklearnWrapperForForecaster
 
 
 class ValidationBasedOnRollingForecastingOrigin:
@@ -211,7 +210,6 @@ class ValidationBasedOnRollingForecastingOrigin:
             X = [None for _ in range(len(y))]
 
         if issubclass(type(forecaster), BaseForecaster):
-            forecaster = SklearnWrapperForForecaster(forecaster)
             param_grid = {
                     f'custom_estimator__{k}': v for k, v in param_grid.items()
                     }

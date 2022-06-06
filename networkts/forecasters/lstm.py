@@ -1,15 +1,20 @@
+import logging
+
 import numpy as np
-from networkts.utils.create_dataset import create_dataset
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.layers import LSTM
 
-from networkts.base import BaseForecaster
+from networkts.utils.create_dataset import create_dataset
+
+from networkts.base import BaseForecaster, Timeseries, as_numpy_array
 from networkts.utils.create_dataset import create_dataset
 
 
 class NtsLstm(BaseForecaster):
+    LOGGER = logging.getLogger(__qualname__)
+
     def __init__(
                 self,
                 lstm_units=64,
@@ -23,19 +28,13 @@ class NtsLstm(BaseForecaster):
         self.look_back = look_back
         self.epochs = epochs
         self.batch_size = batch_size
-
-        self._is_fitted = False
-
-        self._y = None
-        self._X = None
-
-        # forecasting horizon
-        self._fh = None
-        self._cutoff = None  # reference point for relative fh
-
         super().__init__()
 
-    def _fit(self, y, X):
+    def _fit(
+        self,
+        X: Timeseries,
+        y: Timeseries,
+    ):
         # y needs be more than test_size (n_timesteps) in 2 times
 
         model = Sequential()
@@ -61,9 +60,8 @@ class NtsLstm(BaseForecaster):
         model.compile(loss='mse', optimizer='adam', metrics=['mape', 'mae'])
         '''
 
-        self._y = y
         train_x, train_y = create_dataset(
-                                dataset=y.reshape(-1, 1),
+                                dataset=as_numpy_array(y).reshape(-1, 1),
                                 look_back=self.look_back
                                 )
         train_x = train_x.reshape(train_x.shape[0], 1, train_x.shape[1])
@@ -75,17 +73,16 @@ class NtsLstm(BaseForecaster):
                 batch_size=self.batch_size,
                 verbose=False
                 )
-        self.model = model
-        self._is_fitted = True
+        self._model = model
         return self
 
-    def _predict(self, n_timesteps, X=None):
-        y = np.array(self._y)
+    def _predict(
+        self,
+        X: Timeseries,
+    ):
+        n_timesteps = X.shape[0]
+        y = as_numpy_array(self._y)
         y = y[-n_timesteps:]
         y = y.reshape(1, 1, n_timesteps)
-        y_pred = self.model.predict(y).reshape(-1)
+        y_pred = self._model.predict(y).reshape(-1)
         return y_pred
-
-    def _update(self, y, X):
-        self.model = self.fit(self, y=y, X=X)
-        return self
