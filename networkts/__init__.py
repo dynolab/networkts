@@ -7,8 +7,13 @@ import matplotlib.pyplot as plt
 from .utils import common
 
 #  Load config
-with open(os.path.join('config', 'config.yaml')) as f:
-    common.CONF = yaml.safe_load(f)
+try:
+    with open(os.path.join('config', 'config.yaml')) as f:
+        common.CONF = yaml.safe_load(f)
+except FileNotFoundError as e:
+    raise FileNotFoundError('Configuration file config/config.yaml not found. '
+                            'Please create one by copying and renaming an '
+                            'example: config/config.yaml.example')
 
 #  Configure loggers
 logging.basicConfig(format=common.CONF['logger']['format'],
