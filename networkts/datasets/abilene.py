@@ -1,46 +1,63 @@
+from dataclasses import dataclass
 import os
 import logging
-import random
 
 import networkx as nx
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
-import numpy as np
 
 from networkts.utils.common import CONF
+from networkts.datasets.base import Dataset, NetworkTimeseries
 
 
-class AbileneDataset:
+@dataclass
+class AbileneDataset(Dataset):
     LOGGER = logging.getLogger(__qualname__)
 
-    def __init__(
-            self,
-            topology: nx.Graph = None,
-            nodes_traffic: pd.DataFrame = None,
-            edges_traffic: pd.DataFrame = None
-            ):
+    # TODO: actually, these two fields should not be None
+    # but we cannot use fields without default values after
+    # fields with default values (declared in Dataset).
+    # Though this can be fixed somehow, need to check  
+    conf: dict = None
+    routing_matrix: pd.DataFrame = None
 
-        self.topology = topology
-        self.nodes_traffic = nodes_traffic
-        self.edges_traffic = edges_traffic
-        self.rout_matrix = None
-        self.config = CONF['datasets']['abilene']
-
-    def from_config(self):
-        G = nx.read_adjlist(os.path.join(self.config['root'],
-                                         self.config['topology_adjlist_file']),
+    @classmethod
+    def from_config(cls):
+        conf = CONF['datasets']['abilene']
+        root = os.path.normpath(conf['root'])
+        G = nx.read_adjlist(os.path.join(root,
+                                         conf['topology_adjlist_file']),
                             create_using=nx.DiGraph)
-        n_traffic = pd.read_csv(os.path.join(self.config['root'],
-                                             self.config['nodes_traffic']),
+        e2e_traffic_df = pd.read_csv(os.path.join(root,
+                                                  conf['nodes_traffic']),
                                 index_col=0)
-        e_traffic = pd.read_csv(os.path.join(self.config['root'],
-                                             self.config['edges_traffic']),
+        edge_traffic_df = pd.read_csv(os.path.join(root,
+                                                   conf['edges_traffic']),
                                 index_col=0)
-        r_matrix = pd.read_csv(os.path.join(self.config['root'],
-                                            self.config['root_matrix']),
-                               index_col=0)
-        self.topology = G
-        self.nodes_traffic = n_traffic
-        self.edges_traffic = e_traffic
-        self.rout_matrix = r_matrix
+        routing_matrix = pd.read_csv(os.path.join(root,
+                                                  conf['root_matrix']),
+                                     index_col=0)
+        d = cls(
+            name='Abilene',
+            topology=G,
+            node_pair_timeseries=NetworkTimeseries(
+                data=e2e_traffic_df,
+                data_label='E2E traffic'),
+            edge_timeseries=NetworkTimeseries(
+                data=edge_traffic_df,
+                data_label='Edge traffic'),
+            conf=conf,
+            routing_matrix=routing_matrix,
+        )
+        return d
+
+    def make_edge_name(self,
+                       source_node: str,
+                       dest_node: str,
+                       ) -> str:
+        return f'({source_node},{dest_node})'
+
+    def make_node_pair_name(self,
+                            source_node: str,
+                            dest_node: str,
+                            ) -> str:
+        return f'({source_node},{dest_node})'

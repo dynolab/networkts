@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
 from copy import copy
@@ -30,25 +31,6 @@ class NetworkTimeseries:
 
 @dataclass
 class Dataset:
-    """
-    topology: nx.Graph
-
-    ABILENE
-    dataset.nodes_traffic.columns.values
-    dataset.nodes_traffic[el].values
-    dataset.config['savefig_path']
-    dataset.edges_traffic[el].values
-
-    TOTEM
-    dataset.traffic.columns.values
-    dataset.traffic[el].values
-    dataset.config['savefig_path']
-
-    PEMSD7
-    dataset.speeds.columns.values
-    dataset.speeds[el].values
-    dataset.config['savefig_path']
-    """
     name: str
     topology: nx.Graph  # node/edge names are the same as in node/edge dataframes
     node_timeseries: NetworkTimeseries = None  # each column corresponds to the node name
@@ -68,40 +50,51 @@ class Dataset:
         return [n for n, _ in self.topology.nodes.items()]
 
     @property
-    def edge_names(self) -> list[tuple(str, str)]:
-        return self.topology.edges
+    def edge_names(self) -> list[tuple[str, str]]:
+        return list(self.topology.edges)
 
-    def timeseries_by_type(self, type_: TimeseriesType) -> pd.DataFrame:
-        if type_ == TimeseriesType.NODE:
+    def timeseries_by_type(self, ts_type: TimeseriesType) -> pd.DataFrame:
+        if ts_type == TimeseriesType.NODE:
             return self.node_timeseries
-        elif type_ == TimeseriesType.NODE_PAIR:
+        elif ts_type == TimeseriesType.NODE_PAIR:
             return self.node_pair_timeseries
-        elif type_ == TimeseriesType.EDGE:
+        elif ts_type == TimeseriesType.EDGE:
             return self.edge_timeseries
-        raise ValueError(f'Unknown timeseries type: {type_}')
+        raise ValueError(f'Unknown timeseries type: {ts_type}')
 
-    def node_pair_name(self,
+    @abstractmethod
+    def make_edge_name(self,
                        source_node: str,
                        dest_node: str,
                        ) -> str:
-        return f'{source_node},{dest_node}'
+        raise NotImplementedError('Must be implemented in a child class')
+
+    @abstractmethod
+    def make_node_pair_name(self,
+                            source_node: str,
+                            dest_node: str,
+                            ) -> str:
+        raise NotImplementedError('Must be implemented in a child class')
 
     def timeseries_from_node_pairs(self,
                                    source_node: str = None,
                                    dest_node: str = None,
                                    ) -> pd.DataFrame:
+        # Example:
+        # d.timeseries_from_node_pairs(dest_node='0')
+
         assert not (source_node is None and dest_node is None)
         raw_dict = {}
 
         def _put_pair_into_dict(source_node, dest_node):
-            node_pair = self.get_node_pair_name(source_node, dest_node)
-            raw_dict[node_pair] = self.node_pair_timeseries[node_pair]
+            node_pair = self.make_node_pair_name(source_node, dest_node)
+            raw_dict[node_pair] = self.node_pair_timeseries.data[node_pair]
 
         if source_node is not None:
-            for dest_node in self.node_names():
+            for dest_node in self.node_names:
                 _put_pair_into_dict(source_node, dest_node)
         elif dest_node is not None:
-            for source_node in self.node_names():
+            for source_node in self.node_names:
                 _put_pair_into_dict(source_node, dest_node)
         else:
             _put_pair_into_dict(source_node, dest_node)
@@ -119,10 +112,12 @@ class Dataset:
         return dist
 
     def correlation_coefficients(self,
-                                 type_: TimeseriesType = TimeseriesType.NODE,
+                                 ts_type: TimeseriesType = TimeseriesType.NODE,
                                  names: list[str] = None,
                                  covariate_for_partial_corr: CovariateType = None,
                                  ) -> np.ndarray:
+        # Example:
+        # d.correlation_coefficients(ts_type=TimeseriesType.NODE_PAIR, names=['(0,1)', '(1,2)', '(0,2)'])
 
         def _compute_corr_coef(obj):
             if covariate_for_partial_corr is None:
@@ -140,7 +135,7 @@ class Dataset:
                         corr_values[i, j] = pg.partial_corr(data=df, x=n_one, y=n_two, covar=covar_str)
                 return pd.DataFrame(data=corr_values, index=names, columns=names)
 
-        ts = self.timeseries_by_type(type_)
+        ts = self.timeseries_by_type(ts_type)
         if names is None:
             corr = _compute_corr_coef(ts.data)
         else:
@@ -150,10 +145,10 @@ class Dataset:
         return corr.values[np.tril_indices(corr.shape[0], k=-1)]
 
     def correlation_coefficients_by_pairs(self,
-                                          type_: TimeseriesType = TimeseriesType.NODE,
+                                          ts_type: TimeseriesType = TimeseriesType.NODE,
                                           pairs: list[Pair] = None,
                                           ) -> dict[Pair, float]:
-        ts = self.timeseries_by_type(type_)
+        ts = self.timeseries_by_type(ts_type)
         res = {}
         for node_pair in pairs:
             res[node_pair] = ts.data[node_pair[0]].corr(ts.data[node_pair[1]])
@@ -162,20 +157,28 @@ class Dataset:
 
 def create_output_traffic_dataset(dataset: Dataset) -> Dataset:
     output_dataset = copy(dataset)
+    output_dataset.name += ' (output node traffic)' 
     raw_dict = {}
-    for n_source in dataset.node_names():
-        node_pairs_df = dataset.get_timeseries_from_node_pairs(source_node=n_source)
+    for n_source in dataset.node_names:
+        node_pairs_df = dataset.timeseries_from_node_pairs(source_node=n_source)
         raw_dict[n_source] = node_pairs_df.sum(axis=1)
-    output_dataset.node_timeseries = pd.DataFrame(raw_dict)
+    output_dataset.node_timeseries = NetworkTimeseries(
+        data=pd.DataFrame(raw_dict),
+        data_label='Output traffic',
+    )
     return output_dataset
 
 
 def create_input_traffic_dataset(dataset: Dataset) -> Dataset:
     # TODO: too similar to create_output_traffic_dataset
-    output_dataset = copy(dataset)
+    input_dataset = copy(dataset)
+    input_dataset.name += ' (output node traffic)' 
     raw_dict = {}
-    for n_dest in dataset.node_names():
-        node_pairs_df = dataset.get_timeseries_from_node_pairs(dest_node=n_dest)
+    for n_dest in dataset.node_names:
+        node_pairs_df = dataset.timeseries_from_node_pairs(dest_node=n_dest)
         raw_dict[n_dest] = node_pairs_df.sum(axis=1)
-    output_dataset.node_timeseries = pd.DataFrame(raw_dict)
-    return output_dataset
+    input_dataset.node_timeseries = NetworkTimeseries(
+        data=pd.DataFrame(raw_dict),
+        data_label='Input traffic',
+    )
+    return input_dataset

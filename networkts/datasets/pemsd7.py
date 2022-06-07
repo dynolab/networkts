@@ -1,56 +1,70 @@
+from dataclasses import dataclass
 import os
 import logging
-import random
 
 import numpy as np
 import pandas as pd
 import networkx as nx
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pingouin as pg
 
 from networkts.utils.common import CONF
+from networkts.datasets.base import Dataset, NetworkTimeseries
 
 
-class Pemsd7Dataset:
+@dataclass
+class Pemsd7Dataset(Dataset):
     LOGGER = logging.getLogger(__qualname__)
 
-    def __init__(
-                self,
-                topology: nx.DiGraph = None,
-                route_distances: np.ndarray = None,
-                speeds: pd.DataFrame = None
-                ):
-        self.topology = topology
-        self.route_distances = route_distances
-        self.speeds = speeds
-        if not (route_distances is None):
-            self.n_stations = self.route_distances.shape[0]
-        self.config = CONF['datasets']['pemsd7']
-        self.adj_matrix = None
+    # TODO: actually, these three fields should not be None
+    # but we cannot use fields without default values after
+    # fields with default values (declared in Dataset).
+    # Though this can be fixed somehow, need to check  
+    conf: dict = None
+    route_distances: np.ndarray = None
+    n_stations: int = None
 
-    def from_config(self):
-        G = nx.read_adjlist(os.path.join(self.config['root'],
-                                         self.config['topology_adjlist_file']),
+    @classmethod
+    def from_config(cls):
+        conf = CONF['datasets']['pemsd7']
+        root = os.path.normpath(conf['root'])
+        G = nx.read_adjlist(os.path.join(
+                              root,
+                              conf['topology_adjlist_file']
+                            ),
                             create_using=nx.DiGraph)
-        distances = pd.read_csv(
-                            os.path.join(
-                                self.config['root'],
-                                self.config['route_distances_file']
+        distances = pd.read_csv(os.path.join(
+                                  root,
+                                  conf['route_distances_file']
                                 ),
-                            header=None
-                            ).to_numpy()
-        speeds_array = pd.read_csv(
-                            os.path.join(
-                                self.config['root'],
-                                self.config['speeds_file']
+                                header=None).to_numpy()
+        speeds_df = pd.read_csv(os.path.join(
+                                  root,
+                                  conf['speeds_file']
                                 ),
-                            header=None
-                            )
-        self.route_distances = distances
-        self.speeds = speeds_array
-        self.topology = G
-        self.n_stations = self.route_distances.shape[0]
+                                header=None)
+        speeds_df.rename(columns=lambda x: str(x), inplace=True)
+        d = cls(
+            name='PeMSD7',
+            topology=G,
+            node_timeseries=NetworkTimeseries(
+                data=speeds_df,
+                data_label='Road speeds'),
+            conf=conf,
+            route_distances=distances,
+            n_stations=distances.shape[0],
+        )
+        return d
+
+    def make_edge_name(self,
+                       source_node: str,
+                       dest_node: str,
+                       ) -> str:
+        return f'({source_node},{dest_node})'
+
+    def make_node_pair_name(self,
+                            source_node: str,
+                            dest_node: str,
+                            ) -> str:
+        return f'({source_node},{dest_node})'
 
     def compute_adjacency_matrix(
                         self,
@@ -93,4 +107,4 @@ class Pemsd7Dataset:
                 ):
         A = self.compute_adjacency_matrix(sigma2=sigma2, epsilon=epsilon)
         G = nx.from_numpy_matrix(A, create_using=nx.DiGraph)
-        self.topology = G
+        return G
