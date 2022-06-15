@@ -1,5 +1,6 @@
 import math
 from datetime import datetime
+import numpy as np
 
 
 def time(total_minutes):
@@ -11,8 +12,5 @@ def time(total_minutes):
     days += 1
     if days == 7:
         days = 0
-    return datetime.strptime('2004-{}-{} {}:{}'.format(weeks,
-                                                       days,
-                                                       hours,
-                                                       mins),
+    return datetime.strptime(f'2004-{weeks}-{days} {hours}:{mins}',
                              '%Y-%W-%w %H:%M')

@@ -165,15 +165,8 @@ class ValidationBasedOnRollingForecastingOrigin:
             if train_index[-1] > self.max_train_size:
                 break
 
-            if X is None:
-                forecaster.fit(y=y[train_index],
-                               X=None)
-                y_pred = forecaster.predict(n_timesteps=self.n_test_timesteps,
-                                            X=None)
-            else:
-                forecaster.fit(y=y[train_index], X=X[train_index])
-                y_pred = forecaster.predict(n_timesteps=self.n_test_timesteps,
-                                            X=X[test_index])
+            forecaster.fit(y=y[train_index], X=X[train_index])
+            y_pred = forecaster.predict(X=X[test_index])
             yield test_index, y_pred, y[test_index]
 
     def grid_search(self, forecaster, param_grid, y, X):

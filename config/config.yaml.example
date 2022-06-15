@@ -1,3 +1,5 @@
+directory:
+  path: 'your directory'
 logger:
   format: '%(asctime)s, %(name)s: %(message)s'
   date_format: '%d/%m/%Y %I:%M:%S %p'

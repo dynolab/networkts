@@ -1,5 +1,7 @@
 import logging
 
+import numpy as np
+
 from networkts.base import BaseForecaster, Timeseries, as_numpy_array
 from statsmodels.tsa.ar_model import AutoReg
 
@@ -16,6 +18,7 @@ class NtsAutoreg(BaseForecaster):
         self.lags = lags
         self.seasonal = seasonal
         self.period = period
+        self._y = None
         super(BaseForecaster, self).__init__()
 
     def _fit(
@@ -41,6 +44,8 @@ class NtsAutoreg(BaseForecaster):
                                 seasonal=self.seasonal,
                                 period=self.period,
                                 ).fit()
+        if min(abs(self._model.roots)) < 1:
+            self._y = y
         return self
 
     def _predict(
@@ -48,5 +53,8 @@ class NtsAutoreg(BaseForecaster):
         X: Timeseries,
     ):
         n_timesteps = X.shape[0]
-        y_pred = self._model.forecast(n_timesteps)
+        if self._y is not None:
+            y_pred = np.array([np.mean(self._y) for _ in range(n_timesteps)])
+        else:
+            y_pred = self._model.forecast(n_timesteps)
         return y_pred
