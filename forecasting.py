@@ -1,6 +1,7 @@
 import os
 import sys
 import warnings
+import pickle
 
 import numpy as np
 import pandas as pd
@@ -29,19 +30,6 @@ if __name__ == '__main__':
                 index_col=0,     # abilene, totem
                 # header=None,   # pemsd7  
                 )
-    
-    '''
-    df = pd.read_csv(
-                os.path.join(os.getcwd(), 'data/PeMSD7/V_228.csv'),
-                header=None
-                )
-    '''
-    '''
-    df = pd.read_csv(
-        os.path.join(os.getcwd(), 'data/Totem/Link_counts.csv'),
-        index_col=0
-        )
-    '''
 
     df = df.replace([0], 0.1)
 
@@ -52,11 +40,10 @@ if __name__ == '__main__':
 
     ind = np.array([el*delta_time for el in range(df.shape[0])])
 
-    #f = open(f"valid_results/Abilene/window/score_ar_{train_size}.txt", "w")
     score_mape = []
     score_mae = []
     time = datetime.now()
-    for i, feature in enumerate(df.columns.values[:2]):
+    for i, feature in enumerate(df.columns.values):
         print(f'{i+1}/{len(df.columns.values)}')        
         cross_val = Valid(
                         n_test_timesteps=test_size,
@@ -65,7 +52,7 @@ if __name__ == '__main__':
                         max_train_size=np.Inf
                         )
         # Holt-winter
-        
+        '''
         model = build_target_transformer(
                         TransformedTargetRegressor,
                         SklearnWrapperForForecaster(NtsHoltWinter(
@@ -77,10 +64,10 @@ if __name__ == '__main__':
                         params=None,
                         inverse_params=None,
                         )
-        
+        '''
 
         # XGB
-        '''
+        
         model = build_target_transformer(
                                     TransformedTargetRegressor,
                                     SklearnWrapperForForecaster(NtsXgboost()),
@@ -89,7 +76,7 @@ if __name__ == '__main__':
                                     params=None,
                                     inverse_params=None,
                                     )
-        '''
+        
 
         # AR
         '''
@@ -124,24 +111,15 @@ if __name__ == '__main__':
     score_mae = np.array(score_mae).reshape(-1)
     score_mape = np.array(score_mape).reshape(-1)
 
-    print(np.mean(score_mape), np.median(score_mape))
-    print(np.mean(score_mae), np.median(score_mae))
-
-    '''
-    for i in range(len(score_mae)):
-        try:
-            f.write(f'{score_mape[i]:.3f} {score_mae[i]:.3f}\n')
-        except:
-            f.write('None\n')
-
-    try:
-        f.write(f'\nAvg MAPE = {np.mean(score_mape):.3f}\n')
-        f.write(f'MAPE median = {np.median(score_mape):.3f}\n')
-        f.write(f'Avg MAE = {np.mean(score_mae):.3f}\n')
-        f.write(f'MAE median = {np.median(score_mae):.3f}\n')
-    except:
-        f.write("\nNan score...\n")
-
-    f.write(f'Time = {time.total_seconds()} sec')
-    f.close()
-    '''
+    score_file_name = 'your file name'
+    score_dict = {
+        'Avg_mape': np.mean(score_mape),
+        'Mape_median': np.median(score_mape),
+        'Avg_mae': np.mean(score_mae),
+        'Mae_median': np.median(score_mae),
+        'Time': time.total_seconds(),
+        'Mape': score_mape,
+        'Mae': score_mae
+        }
+    with open(score_file_name, 'wb') as file_pi:
+        pickle.dump(score_dict, file_pi)
