@@ -88,13 +88,14 @@ class ValidationBasedOnRollingForecastingOrigin:
     n_splits : int
         Required number of training/validation piece pairs
     """
-    def __init__(self,
-                 # metric=[mape],
-                 metric=[mape, mae],
-                 n_training_timesteps=None,
-                 n_test_timesteps=10,
-                 n_splits=10,
-                 max_train_size=10000):
+    def __init__(
+            self,
+            metric=[mape, mae],
+            n_training_timesteps=None,
+            n_test_timesteps=10,
+            n_splits=10,
+            max_train_size=10000
+            ):
         self.metric = metric
         self.n_training_timesteps = n_training_timesteps
         self.n_test_timesteps = n_test_timesteps
@@ -164,7 +165,7 @@ class ValidationBasedOnRollingForecastingOrigin:
             # limit for train_size
             if train_index[-1] > self.max_train_size:
                 break
-
+            
             forecaster.fit(y=y[train_index], X=X[train_index])
             y_pred = forecaster.predict(X=X[test_index])
             yield test_index, y_pred, y[test_index]
@@ -224,7 +225,7 @@ class ValidationBasedOnRollingForecastingOrigin:
         score = []
         for m in self.metric:
             try:
-                score.append(m(y_true, y_pred))
+                score.append(m(y_pred=y_pred, y_true=y_true))
             except:
                 score.append(None)
         return score
