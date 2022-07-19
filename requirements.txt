@@ -4,11 +4,11 @@ pandas
 networkx
 matplotlib
 seaborn
-pingouin
 statsmodels
 statistics
 scipy
 tensorflow
 tf-nightly
 xgboost
+lightgbm
 scikit-learn
