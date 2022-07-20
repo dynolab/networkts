@@ -1,6 +1,6 @@
-import os
 import pickle
 
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -49,31 +49,99 @@ def plot_valid_score(
     return fig, ax
 
 
-def plot_score_distribution_by_series(
-        serie: np.array or list,
-        timestep: np.array or list,  # points for scores
-        mape: np.array or list = None,
-        mae: np.array or list = None,
-        title: str = None,
-        name: str = None
-        ):
-    if mape is None and mae is None:
-        raise "Scores is None!"
+def plot_score_distribution_by_serie(
+    serie: np.array or list,
+    score_file: str,
+    start_point: int,   # Abilene - 384, PeMSD7 - 172, Totem - 272
+    test_size: int = 500,
+    window: int = 1000,
+    title: str = None,
+    name: str = None
+):
+    with open(score_file, 'rb') as f:
+        score = pickle.load(f)
+    mape = score['Mape']
+    mae = score['Mae']
+
+    # Time point
+    timesteps = [start_point + window]
+    while timesteps[-1] < serie.shape[0]:
+        if timesteps[-1]+test_size >= serie.shape[0]:
+            break
+        timesteps.append(timesteps[-1] + test_size)
+
+    # Avg score
+    n = mape.shape[0]//len(timesteps)
+    mape = np.mean(mape.reshape(n, len(timesteps)), axis=0)
+    mae = np.mean(mae.reshape(n, len(timesteps)), axis=0)
+
     fig, ax = plt.subplots(3, 1, sharex=True, figsize=(24, 16))
     if title is not None:
         fig.suptitle(title)
     ax[0].plot(serie, color='b', label='real serie')
     ax[0].set_yscale('log')
     if mape is not None:
-        ax[1].plot(timestep, mape, 'o-', color='orange')
+        ax[1].plot(timesteps, mape, 'o-', color='orange')
     if mae is not None:
-        ax[2].plot(timestep, mae, 'o-', color='orange')
+        ax[2].plot(timesteps, mae, 'o-', color='orange')
     ax[2].set_yscale('log')
     ax[1].set_ylabel('mape')
     ax[2].set_ylabel('mae')
-    ax[2].set_xlabel('time, min')
+    ax[2].set_xlabel('Time, min')
     if name is not None:
         plt.savefig(name)
+    return fig, ax
+
+
+def plot_score_distribution_by_series_contour(
+    score_file: str,
+    df: pd.DataFrame,
+    start_point: int,   # Abilene - 384, PeMSD7 - 172, Totem - 272
+    test_size: int = 500,
+    log: bool = True,
+    window: int = 1000,
+    title: str = None,
+    fig_name: str = None,
+):
+    with open(score_file, 'rb') as f:
+        score = pickle.load(f)
+    score_mape = score['Mape']
+    score_mae = score['Mae']
+
+    # Time point
+    x = [start_point + window]
+    while x[-1] < df.shape[0]:
+        if x[-1]+test_size >= df.shape[0]:
+            break
+        x.append(x[-1] + test_size)
+
+    score_mape = np.mean(score_mape.reshape(df.shape[1], len(x)), axis=0)
+    score_mae = np.mean(score_mae.reshape(df.shape[1], len(x)), axis=0)
+
+    fig, ax = plt.subplots(3, 1, sharex=True, figsize=(22, 9))
+    Z = []
+    for col in df.columns.values:
+        if log:
+            Z.append(np.log10(df[col].values))
+        else:
+            Z.append(df[col].values)
+    cs = ax[0].contourf(Z, levels=30, extend='both')
+    fig.colorbar(cs, ax=ax.ravel().tolist())
+    ax[0].set_ylabel('Serie, №')
+    ax[0].set_title('Time series contours')
+
+    ax[1].plot(x, score_mape, 'o-', color='orange')
+    ax[2].plot(x, score_mae, 'o-', color='orange')
+    ax[1].set_yscale('log')
+    ax[2].set_yscale('log')
+    ax[1].set_ylabel('mape')
+    ax[2].set_ylabel('mae')
+    ax[2].set_xlabel('Time, min')
+
+    if title is not None:
+        fig.suptitle(title)
+    if fig_name is not None:
+        plt.savefig(fig_name)
     return fig, ax
 
 
@@ -102,6 +170,7 @@ def plot_score_from_files(
         file_names: list,
         # file_names - list with names like as '.../score_xgb_{window_size}',
         # where window_size in [1000, 2000, ..., 5000, ...]
+        title: str = None,
         fig_name: str = None,
         ):
     time = []
@@ -151,6 +220,8 @@ def plot_score_from_files(
     ax[2, 0].set_ylabel('mae')
     ax[0, 0].set_title('Avg')
     ax[0, 1].set_title('Median')
+    if title is not None:
+        fig.suptitle(title)
     if fig_name is not None:
         plt.savefig(fig_name)
     return fig, ax

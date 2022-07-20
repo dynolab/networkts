@@ -1,6 +1,5 @@
 import math
 from datetime import datetime
-import numpy as np
 
 
 def time(total_minutes):

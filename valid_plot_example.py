@@ -6,18 +6,10 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from sklearn.metrics import mean_absolute_percentage_error as mape
-from sklearn.metrics import mean_absolute_error as mae
-from datetime import datetime
-from sklearn.compose import TransformedTargetRegressor
+
 
 from sttf.utils import common
 sys.path.append(common.CONF['directory']['path_networks'])
-from forecasters.xgboost import NtsXgboost
-from utils.sklearn_helpers import SklearnWrapperForForecaster
-from utils.sklearn_helpers import build_target_transformer
-from cross_validation import ValidationBasedOnRollingForecastingOrigin as Valid
-from forecasters.autoreg import NtsAutoreg
 from decompositions.basic import log_target, inverse_log_target
 from decompositions.basic import exp_smoth, moving_avg, nothing
 
@@ -36,102 +28,51 @@ if __name__ == '__main__':
             # header=None,   # pemsd7
             )
 
-    df = df.replace([0], 0.1)
+    for el in df.columns.values:
+        df.loc[df[el] < 1000, el] = 1000
 
     train_size = 4000
     test_size = 500
     period = 96
     delta_time = 15
     feature = df.columns.values[44]
-
     ind = np.array([el*delta_time for el in range(df.shape[0])])
 
-    score_mape = []
-    score_mae = []
-    time = datetime.now()
-
-    cross_val = Valid(
-            n_test_timesteps=test_size,
-            n_training_timesteps=train_size,
-            n_splits=df.shape[0]//test_size - train_size//test_size,
-            max_train_size=np.Inf
-            )
-
-    # XGB
-    
-    model = build_target_transformer(
-                TransformedTargetRegressor,
-                SklearnWrapperForForecaster(NtsXgboost()),
-                func=log_target,
-                inverse_func=inverse_log_target,
-                params=None,
-                inverse_params=None,
-                )
-    
-
-    # AR
     '''
-    model = build_target_transformer(
-                TransformedTargetRegressor,
-                SklearnWrapperForForecaster(
-                    NtsAutoreg(
-                        lags=3,
-                        seasonal=True,
-                        period=period
-                        )),
-                func=log_target,
-                inverse_func=inverse_log_target,
-                params=None,
-                inverse_params=None,
-                )
+    # plot validation score
+    from sttf.plots.validation import plot_valid_score
+    fig, ax = plot_valid_score('valid_results/Totem/window/es/score_ar_3000')
+    plt.show()
     '''
-
-    model.fit(y=df[feature].values[771:4770], X=ind[771:4770])
-    pred = model.predict(ind[4771:5270])
     '''
-    t = cross_val.evaluate(
-            forecaster=model,
-            y=moving_avg(df[feature].values, 30),
-            X=ind
-            )
-
-    t = np.array(t)
-    t1, t2 = t[:, 0], t[:, 1]
-    score_mape += t1.tolist()
-    score_mae += t2.tolist()
-    print(np.mean(score_mape))
-    '''
-
-
-    # plot_score_distribution_by_series
-    from sttf.plots.validation import plot_score_distribution_by_series
-    x = [
-        4272,
-        4772,
-        5272,
-        5772,
-        6272,
-        6772,
-        7272,
-        7772,
-        8272,
-        8772,
-        9272,
-        9772,
-        10272,
-        ]
-    fig, ax = plot_score_distribution_by_series(
+    # plot score distribution by serie
+    from sttf.plots.validation import plot_score_distribution_by_serie
+    fig, ax = plot_score_distribution_by_serie(
         df[feature].values,
-        x,
-        score_mape,
-        score_mae,
-        f'XGB, Window size = {train_size}',
+        'valid_results/Totem/window/es/score_ar_3000',
+        272,
+        500,
+        3000,
+        f'AR, Window size = 3000',
     )
-    ax[0].plot(moving_avg(df[feature].values, 30), color='g', label='m_a')
+    ax[0].plot(moving_avg(df[feature].values, [30]), color='g', label='m_a')
     ax[0].legend()
     plt.show()
-    
-
+    '''
+    '''
+    from sttf.plots.validation import plot_score_distribution_by_series_contour
+    fig, ax = plot_score_distribution_by_series_contour(
+        'valid_results/Abilene/window/ssa/score_ar_3000',
+        df,
+        384,
+        True,
+        3000,
+        'Abilene, SSA, AR, Window size = 3000 - score distribution',
+    )
+    #plt.savefig('pic/Totem/valid/window/ssa/totem_score_distribution.png', dpi=200)
+    plt.show()
+    '''
+    '''
     # plot forecast for one serie
     from sttf.plots.validation import plot_forecast
     x = ind/15
@@ -145,22 +86,25 @@ if __name__ == '__main__':
         f'Window = {train_size}, score = {mape(y_pred=pred, y_true=y[4771:5270]):.3f}, {mae(pred, y[4771:5270]):.3f}',
         )
     plt.show()
-    
+    '''
 
-    # plot_score_from_files
+    '''
+    # plot score from files
     from sttf.plots.validation import plot_score_from_files
-    file_names = []
-    for train_size in [1000*i for i in range(1, 6)]:
-        file_names.append(
-            f'valid_results/PeMSD7/window/score_xgb_{train_size}'
-            )
+    data = 'Totem'
+    for smooth in ['log', 'es', 'ssa']:
+        for method in ['ar', 'xgb']:
+            names_list = []
+            for train_size in [1000, 2000, 3000, 4000, 5000]:
+                names_list.append(f'valid_results/{data}/window/{smooth}/score_{method}_{train_size}')
 
-    fig, ax = plot_score_from_files(
-        file_names
-        )
+            title = f'{data}, {smooth}, {method}'
+            fig_name = f'pic/{data}/valid/window/{smooth}/score_{data}_{smooth}_{method}.png'
+            plot_score_from_files(names_list, title, fig_name)
     plt.show()
-    
-    
+    '''
+
+    '''
     # plot bar distribution
     from sttf.plots.validation import bar_plot
     data = {}
@@ -179,3 +123,4 @@ if __name__ == '__main__':
     fig.suptitle('AutoReg Mape for PeMSD7')
     bar_plot(ax, data, total_width=.8, single_width=1)
     plt.show()
+    '''

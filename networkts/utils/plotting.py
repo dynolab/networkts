@@ -13,7 +13,7 @@ def savefig(path_to_save, dpi=200):
     def inner_decorator(plotting_func):
         @wraps(plotting_func)
         def wrapper(*args, **kwargs):
-            res = plotting_func(*args, **kwargs)    
+            res = plotting_func(*args, **kwargs)
             plt.savefig(path_to_save, dpi=dpi)
             return res
         return wrapper
@@ -23,7 +23,7 @@ def savefig(path_to_save, dpi=200):
 def showfig(plotting_func):
     @wraps(plotting_func)
     def wrapper(*args, **kwargs):
-        res = plotting_func(*args, **kwargs)    
+        res = plotting_func(*args, **kwargs)
         plt.show()
         return res
     return wrapper
