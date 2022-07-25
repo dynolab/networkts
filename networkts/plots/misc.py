@@ -5,7 +5,7 @@ import networkx as nx
 import matplotlib
 import matplotlib.pyplot as plt
 
-from sttf.datasets.base import Dataset, TimeseriesType
+from networkts.datasets.base import Dataset, TimeseriesType
 
 
 def plot_topology(
