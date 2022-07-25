@@ -2,6 +2,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
 from copy import copy
+from typing import Tuple, List, Dict
 
 import numpy as np
 import networkx as nx
@@ -9,7 +10,7 @@ import pandas as pd
 import pingouin as pg
 
 
-Pair = tuple[str, str]
+Pair = Tuple[str, str]
 
 
 class TimeseriesType(Enum):
@@ -46,11 +47,11 @@ class Dataset:
         return self.topology.number_of_edges()
 
     @property
-    def node_names(self) -> list[str]:
+    def node_names(self) -> List[str]:
         return [n for n, _ in self.topology.nodes.items()]
 
     @property
-    def edge_names(self) -> list[tuple[str, str]]:
+    def edge_names(self) -> List[Tuple[str, str]]:
         return list(self.topology.edges)
 
     def timeseries_by_type(self, ts_type: TimeseriesType) -> pd.DataFrame:
@@ -100,7 +101,7 @@ class Dataset:
             _put_pair_into_dict(source_node, dest_node)
         return pd.DataFrame(raw_dict)
 
-    def shortest_distances(self) -> dict[Pair, int]:
+    def shortest_distances(self) -> Dict[Pair, int]:
         dist = {}
         for i in self.topology.nodes:
             for j in self.topology.nodes:
@@ -113,7 +114,7 @@ class Dataset:
 
     def correlation_coefficients(self,
                                  ts_type: TimeseriesType = TimeseriesType.NODE,
-                                 names: list[str] = None,
+                                 names: List[str] = None,
                                  covariate_for_partial_corr: CovariateType = None,
                                  ) -> np.ndarray:
         # Example:
@@ -146,8 +147,8 @@ class Dataset:
 
     def correlation_coefficients_by_pairs(self,
                                           ts_type: TimeseriesType = TimeseriesType.NODE,
-                                          pairs: list[Pair] = None,
-                                          ) -> dict[Pair, float]:
+                                          pairs: List[Pair] = None,
+                                          ) -> Dict[Pair, float]:
         ts = self.timeseries_by_type(ts_type)
         res = {}
         for node_pair in pairs:
