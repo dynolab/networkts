@@ -108,7 +108,6 @@ setup(
         "statistics",
         "scipy",
         "tensorflow",
-        "tf-nightly",
         "xgboost",
         "lightgbm",
         "scikit-learn",
