@@ -31,7 +31,7 @@ def set_config(p: str) -> None:
     #  Load config
     try:
         with open(p) as f:
-            CONF = yaml.safe_load(f)
+            CONF.set_dict(yaml.safe_load(f))
     except FileNotFoundError as e:
         raise FileNotFoundError(f'Configuration file {p} not found. '
                                 f'Please create one by copying and renaming an '
