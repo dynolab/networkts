@@ -1,28 +1,14 @@
 # networkts
 Analysis and forecasting of time series defined on networks
 
-<br>
-<b>Requirements:</b>
-<ol>
-    <li>For pip
-    <ul>
-        <li>numpy</li>
-        <li>PyYAML</li>
-        <li>pandas</li>
-        <li>networkx</li>
-        <li>matplotlib</li>
-        <li>seaborn</li>
-        <li>pingouin</li>
-        <li>statsmodels</li>
-        <li>statistics</li>
-        <li>scipy</li>
-        <li>tensorflow</li>
-        <li>tf-nightly</li>
-        <li>xgboost</li>
-        <li>scikit-learn</li>
-    </ul></li>
-    <li>For conda
-        <ul>
-            <li>prophet</li>
-        </ul></li>
-</ol>
+## Getting started
+
+This package can be installed directly from github via
+```bash
+$ pip install git+https://github.com/dynolab/networkts.git
+```
+All the requirements must be installed automatically except for prophet which must be installed manually from conda repositories:
+```bash
+$ conda install -c conda-forge prophet
+```
+If you want to update the `networkts` package to have the most fresh, please first uninstall it and then install it again.
