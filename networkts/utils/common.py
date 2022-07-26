@@ -16,7 +16,7 @@ class Config:
         self._conf_as_dict = d
     
     def __getitem__(self, k: Any):
-        if self.conf_as_dict is None:
+        if self._conf_as_dict is None:
             raise ConfigNotFoundException(f'Config has not been set. '
                                           f'Call networkts.utils.common.set_config() '
                                           f'to provide the configuration file')
