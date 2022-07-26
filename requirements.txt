@@ -1,14 +1,1 @@
-numpy
-PyYAML
-pandas
-networkx
-matplotlib
-seaborn
-statsmodels
-statistics
-scipy
-tensorflow
-tf-nightly
-xgboost
-lightgbm
-scikit-learn
+.

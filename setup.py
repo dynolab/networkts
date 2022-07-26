@@ -95,7 +95,24 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/discussions/install-requires-vs-requirements/
-    #install_requires=["peppercorn"],  # Optional
+    # Here is how to keep both install_requires and requirements.txt 
+    # without duplication: https://stackoverflow.com/questions/14399534/reference-requirements-txt-for-the-install-requires-kwarg-in-setuptools-setup-py/16624700
+    install_requires=[
+        "numpy",
+        "PyYAML",
+        "pandas",
+        "networkx",
+        "matplotlib",
+        "seaborn",
+        "statsmodels",
+        "statistics",
+        "scipy",
+        "tensorflow",
+        "tf-nightly",
+        "xgboost",
+        "lightgbm",
+        "scikit-learn",
+    ],  # Optional
     # If there are data files included in your packages that need to be
     # installed, specify them here.
     #package_data={  # Optional
