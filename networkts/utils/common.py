@@ -1,10 +1,45 @@
 import os
 import subprocess
+import logging
+from typing import Any
 
+import yaml
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
-CONF = None  # Only declare here. Define in __init__.py 
+class Config:
+    def __init__(self):
+        self._conf_as_dict = None
+    
+    def set_dict(self, d: dict):
+        self._conf_as_dict = d
+    
+    def __getitem__(self, k: Any):
+        if self.conf_as_dict is None:
+            raise ConfigNotFoundException(f'Config has not been set. '
+                                          f'Call networkts.utils.common.set_config() '
+                                          f'to provide the configuration file')
+        return self._conf_as_dict[k]
+
+
+CONF = Config()  # Create an empty config. Must call set_config() to fill it 
+
+
+def set_config(p: str) -> None:
+    global CONF
+    #  Load config
+    try:
+        with open(p) as f:
+            CONF = yaml.safe_load(f)
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f'Configuration file {p} not found. '
+                                f'Please create one by copying and renaming an '
+                                f'example: config/config.yaml.example')
+    #  Configure loggers
+    logging.basicConfig(format=CONF['logger']['format'],
+                        datefmt=CONF['logger']['date_format'],
+                        level=logging.INFO)
 
 
 def inverse_dict(d: dict) -> dict:
@@ -32,3 +67,7 @@ def run_rscript(
     for name in (input_filename, output_filename):
         os.remove(name)
     return df
+
+
+class ConfigNotFoundException(Exception):
+    pass
