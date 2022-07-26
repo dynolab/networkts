@@ -7,7 +7,6 @@ from typing import Tuple, List, Dict
 import numpy as np
 import networkx as nx
 import pandas as pd
-import pingouin as pg
 
 
 Pair = Tuple[str, str]
@@ -124,6 +123,8 @@ class Dataset:
             if covariate_for_partial_corr is None:
                 return obj.corr()
             else:
+                import pingouin as pg
+                
                 df = pd.DataFrame(obj)
                 covar_str = covariate_for_partial_corr
                 if covariate_for_partial_corr == CovariateType.AVERAGE:
