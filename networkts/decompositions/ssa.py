@@ -6,7 +6,13 @@ import matplotlib.pyplot as plt
 class SSA(object):
     __supported_types = (pd.Series, np.ndarray, list)
 
-    def __init__(self, tseries, L, save_mem=True):
+    def __init__(
+        self,
+        tseries,
+        L: int = 50,
+        noise_signal_split: int = 2,
+        save_mem: bool = True
+    ):
         """
         Decomposes the given time series with a singular-spectrum analysis.
         Assumes the values of the time series are recorded at equal intervals.
@@ -39,6 +45,7 @@ class SSA(object):
             raise ValueError(er)
 
         self._L = L
+        self.noise_signal_split = noise_signal_split
         tseries = np.array(tseries).reshape(-1)
         self.orig_TS = pd.Series(tseries)
         self._K = self._N - self._L + 1
@@ -182,3 +189,14 @@ class SSA(object):
 
         plt.xlim(min-0.5, max_rnge+0.5)
         plt.ylim(max_rnge+0.5, min-0.5)
+
+    def ssa_target(self, y):
+        y = np.array(y).reshape(-1)
+        self.save_memory()
+        self.calc_wcorr()
+        res = np.array(abs(self.reconstruct(slice(0, self.noise_signal_split))))
+        return res
+    
+    def inverse_ssa_target(self, y):
+        # do nothing
+        return y
