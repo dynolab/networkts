@@ -33,9 +33,9 @@ class NtsVar(BaseForecaster):
                             maxlags=self.maxlags,
                             trend=self.trend
                             )
-        #print(self._model.roots.astype('float'))
-        #if min(abs(self._model.roots[0])) < 1:
-        #    self._y = y[0]
+        
+        if max(abs(self._model.roots)) > 1:
+            self._y = y[0]
         return self
 
     def _predict(
@@ -43,7 +43,7 @@ class NtsVar(BaseForecaster):
         X: Timeseries,
     ):
         n_timesteps = X.shape[0]
-        if self._y is not None and False:
+        if self._y is not None:
             y_pred = np.array([np.mean(self._y) for _ in range(n_timesteps)])
         else:
             y_pred = self._model.forecast(
