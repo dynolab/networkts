@@ -4,7 +4,7 @@ from networkts.base import BaseForecaster, Timeseries, as_numpy_array
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 
-class NtsHoltWinter(BaseForecaster):
+class NtsHoltWinters(BaseForecaster):
     LOGGER = logging.getLogger(__qualname__)
 
     def __init__(self, seasonal='additive', seasonal_periods=0):

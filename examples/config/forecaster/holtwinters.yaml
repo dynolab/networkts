@@ -1,0 +1,3 @@
+_target_: networkts.forecasters.holtwinters.NtsHoltWinters
+seasonal: additive
+seasonal_periods: 0

@@ -1,5 +1,9 @@
-# Directory with datasets
+# VSCode
+.vscode/
+
+# Directory with datasets and outputs
 data/
+outputs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

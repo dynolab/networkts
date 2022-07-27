@@ -65,6 +65,7 @@ def plot_nodes_dist_hist_for_pemsd7(
     dataset,
     k: int = 3,
     save_mod: bool = False,
+    savefig_path: str = '',
 ):
     x = dataset.route_distances.reshape(-1)/1000
     key = [f'{i}-{i+k}' for i in range(0, int(max(x)), k)]
@@ -79,6 +80,6 @@ def plot_nodes_dist_hist_for_pemsd7(
     plt.ylabel("Road's count")
     plt.title("Distance hist")
     if save_mod:
-        plt.savefig(os.path.join(dataset.config['savefig_path'],
+        plt.savefig(os.path.join(savefig_path,
                     'dist_hist.png'))
     plt.show()

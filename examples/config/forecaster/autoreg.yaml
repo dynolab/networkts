@@ -1,0 +1,4 @@
+_target_: networkts.forecasters.autoreg.NtsAutoreg
+lags: 1
+seasonal: False
+period: null

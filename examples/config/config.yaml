@@ -1,0 +1,4 @@
+third_party:
+  rscripts_dir: 'rscripts'
+hypothesis_testing:
+  mcleod_li_test_script_name: 'mcleod_li_test.r'

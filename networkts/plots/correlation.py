@@ -120,7 +120,8 @@ def plot_correlation_between_object_and_neighbors(dataset: Dataset,
 
 def plot_box_corr_dist_nodes_traffic_for_pemsd7(dataset,
                                      k: int = 3,
-                                     save_mod: bool = False
+                                     save_mod: bool = False,
+                                     savefig_path: str = ''
                                      ):
     x = dataset.route_distances.reshape(-1)/1000
     y = abs(dataset.speeds.corr().values).reshape(-1)
@@ -136,6 +137,6 @@ def plot_box_corr_dist_nodes_traffic_for_pemsd7(dataset,
     plt.ylabel("Correlation")
     plt.title("Dependence between corr & distance")
     if save_mod:
-        plt.savefig(os.path.join(dataset.config['savefig_path'],
+        plt.savefig(os.path.join(savefig_path,
                                 'corr_dist_nodes_traffic.png'))
     plt.show()

@@ -13,31 +13,47 @@ from networkts.datasets.base import Dataset, NetworkTimeseries
 class TotemDataset(Dataset):
     LOGGER = logging.getLogger(__qualname__)
 
-    # TODO: actually, this field should not be None
-    # but we cannot use fields without default values after
-    # fields with default values (declared in Dataset).
-    # Though this can be fixed somehow, need to check  
-    conf: dict = None
-
     @classmethod
-    def from_config(cls):
-        conf = CONF['datasets']['totem']
-        root = os.path.normpath(conf['root'])
+    def from_config(cls,
+                    root: str,
+                    topology_adjlist_file: str,
+                    traffic: str,
+                    edges_traffic: str,
+                    ):
+        root = os.path.normpath(root)
         G = nx.read_adjlist(os.path.join(
                               root,
-                              conf['topology_adjlist_file']
+                              topology_adjlist_file
                             ),
                             create_using=nx.DiGraph)
         e2e_traffic_df = pd.read_csv(os.path.join(
                                        root,
-                                       conf['traffic']
+                                       traffic
                                      ),
                                      index_col=0)
         edge_traffic_df = pd.read_csv(os.path.join(
                                         root,
-                                        conf['edges_traffic']
+                                        edges_traffic
                                       ),
                                       index_col=0)
+
+#        conf = CONF['datasets']['totem']
+#        root = os.path.normpath(conf['root'])
+#        G = nx.read_adjlist(os.path.join(
+#                              root,
+#                              conf['topology_adjlist_file']
+#                            ),
+#                            create_using=nx.DiGraph)
+#        e2e_traffic_df = pd.read_csv(os.path.join(
+#                                       root,
+#                                       conf['traffic']
+#                                     ),
+#                                     index_col=0)
+#        edge_traffic_df = pd.read_csv(os.path.join(
+#                                        root,
+#                                        conf['edges_traffic']
+#                                      ),
+#                                      index_col=0)
         d = cls(
             name='Totem',
             topology=G,
@@ -47,7 +63,6 @@ class TotemDataset(Dataset):
             edge_timeseries=NetworkTimeseries(
                 data=edge_traffic_df,
                 data_label='Edge traffic'),
-            conf=conf,
         )
         return d
 

@@ -12,7 +12,7 @@ import networkts
 from networkts.utils import common
 from networkts.forecasters.autoreg import NtsAutoreg
 from networkts.forecasters.xgboost import NtsXgboost
-from networkts.forecasters.holtwinter import NtsHoltWinter
+from networkts.forecasters.holtwinter import NtsHoltWinters
 from networkts.forecasters._lightgbm import NtsLightgbm
 from networkts.utils.sklearn_helpers import SklearnWrapperForForecaster, build_target_transformer
 from networkts.cross_validation import ValidationBasedOnRollingForecastingOrigin as Valid
@@ -66,7 +66,7 @@ def func():
             '''
             model = build_target_transformer(
                             TransformedTargetRegressor,
-                            SklearnWrapperForForecaster(NtsHoltWinter(
+                            SklearnWrapperForForecaster(NtsHoltWinters(
                                                         seasonal='additive',
                                                         seasonal_periods=period
                                                         )),

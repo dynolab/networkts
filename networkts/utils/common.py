@@ -36,10 +36,10 @@ def set_config(p: str) -> None:
         raise FileNotFoundError(f'Configuration file {p} not found. '
                                 f'Please create one by copying and renaming an '
                                 f'example: config/config.yaml.example')
-    #  Configure loggers
-    logging.basicConfig(format=CONF['logger']['format'],
-                        datefmt=CONF['logger']['date_format'],
-                        level=logging.INFO)
+#    #  Configure loggers
+#    logging.basicConfig(format=CONF['logger']['format'],
+#                        datefmt=CONF['logger']['date_format'],
+#                        level=logging.INFO)
 
 
 def inverse_dict(d: dict) -> dict:

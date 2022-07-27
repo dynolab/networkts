@@ -1,0 +1,2 @@
+_target_: networkts.decompositions.standard.ESTarget
+smoothing_level: 0.1
