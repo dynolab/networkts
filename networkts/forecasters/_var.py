@@ -33,7 +33,7 @@ class NtsVar(BaseForecaster):
                             maxlags=self.maxlags,
                             trend=self.trend
                             )
-        print(self._model.roots.astype('float'))
+        #print(self._model.roots.astype('float'))
         #if min(abs(self._model.roots[0])) < 1:
         #    self._y = y[0]
         return self

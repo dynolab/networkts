@@ -1,25 +1,24 @@
 import os
-import sys
 import warnings
 import pickle
 
 import numpy as np
 import pandas as pd
+import networkx as nx
 from datetime import datetime
 from sklearn.compose import TransformedTargetRegressor
 from threadpoolctl import ThreadpoolController, threadpool_limits
 
+import networkts
 from networkts.utils import common
-sys.path.append(common.CONF['directory']['path_networks'])
-from forecasters.autoreg import NtsAutoreg
-from forecasters.xgboost import NtsXgboost
-from forecasters.holtwinter import NtsHoltWinter
-from forecasters._lightgbm import NtsLightgbm
-from utils.sklearn_helpers import SklearnWrapperForForecaster, build_target_transformer
-from cross_validation import ValidationBasedOnRollingForecastingOrigin as Valid
-from decompositions.basic import *
+from networkts.utils.sklearn_helpers import SklearnWrapperForForecaster, build_target_transformer
+from networkts.cross_validation import ValidationBasedOnRollingForecastingOrigin as Valid
+from networkts.decompositions.basic import *
+from networkts.forecasters._var import NtsVar
+from networkts.utils.create_dummy_vars import create_dummy_vars
 
 
+common.set_config('config/config.yaml')
 nthread = common.CONF['multiprocessing']['nthread']
 controller = ThreadpoolController()
 @threadpool_limits.wrap(limits=nthread, user_api='blas')
@@ -32,48 +31,50 @@ def func():
                     common.CONF['datasets']['pemsd7']['root'],
                     common.CONF['datasets']['pemsd7']['speeds_file']
                     ),
-                # index_col=0,     # abilene, totem
-                header=None,   # pemsd7
+                # index_col=0,      # abilene, totem
+                header=None,        # pemsd7
                 )
-
-    '''for feature in df.columns.values:
-        df.loc[df[feature] < 1000, feature] = 1000'''
-
+            
     test_size = 500
     period = 288
     delta_time = 5
-    ind = np.array([el*delta_time for el in range(df.shape[0])])
+
+    df.index = np.array([el*delta_time for el in range(df.shape[0])])   # for pemsd7
+
+    '''
+    for feature in df.columns.values:
+        df.loc[df[feature] < 1000, feature] = 1000
+    '''
+
+    G = nx.read_adjlist(
+                    os.path.join(
+                            common.CONF['datasets']['pemsd7']['root'],
+                            common.CONF['datasets']['pemsd7']['topology_adjlist_file']
+                            ),
+                    create_using=nx.DiGraph)
 
     # SSA
     L = 50
     n = 2
 
+    # dummy variables for one hop forecasting
+    dummy_vars = create_dummy_vars(df.index, period)
+
     for train_size in [1000, 2000, 3000, 4000, 5000]:
         score_mape = []
         score_mae = []
         time = datetime.now()
-        for i, feature in enumerate(df.columns.values):
+        for i, feature in enumerate(list(G.nodes)):
             print(f'{i+1}/{len(df.columns.values)}')
+            cols = np.array([feature] + list(G.neighbors(feature))).astype(int)
+            data = df[cols]
+
             cross_val = Valid(
                             n_test_timesteps=test_size,
                             n_training_timesteps=train_size,
                             n_splits=df.shape[0]//test_size - train_size//test_size,
                             max_train_size=np.Inf
                             )
-            # Holt-winter
-            '''
-            model = build_target_transformer(
-                            TransformedTargetRegressor,
-                            SklearnWrapperForForecaster(NtsHoltWinter(
-                                                        seasonal='additive',
-                                                        seasonal_periods=period
-                                                        )),
-                            func=log_target,
-                            inverse_func=inverse_log_target,
-                            params=None,
-                            inverse_params=None,
-                            )
-            '''
 
             # XGB
             '''
@@ -87,23 +88,22 @@ def func():
                                         )
             '''
 
-            # AR
-            '''
+            # VAR
+            
             model = build_target_transformer(
                         TransformedTargetRegressor,
                         SklearnWrapperForForecaster(
-                            NtsAutoreg(
-                                lags=3,
-                                seasonal=True,
-                                period=period
+                            NtsVar(
+                                maxlags=300,
+                                trend='ctt',
                                 )),
                         func=log_target,
                         inverse_func=inverse_log_target,
                         params=None,
                         inverse_params=None,
                         )
+            
             '''
-
             # Lgb
             model = build_target_transformer(
                         TransformedTargetRegressor,
@@ -119,11 +119,11 @@ def func():
                         params=None,
                         inverse_params=None,
                         )
-
+            '''
             t = cross_val.evaluate(
                             forecaster=model,
-                            y=df[feature].values,
-                            X=ind
+                            y=data.values,
+                            X=dummy_vars.values
                             )
 
             t = np.array(t)
@@ -145,7 +145,7 @@ def func():
             'Mape': score_mape,
             'Mae': score_mae
         }
-        with open(f'valid_results/PeMSD7/window/log/score_lgb_{train_size}', 'wb') as file_pi:
+        with open(f'valid_results/PeMSD7/window/log/score_var_{train_size}', 'wb') as file_pi:
             pickle.dump(score_dict, file_pi)
     
 func()
