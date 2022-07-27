@@ -1,0 +1,6 @@
+_target_: networkts.datasets.abilene.AbileneDataset.from_config
+root: 'd:/Onebox/reps/github/dynolab/networkts/data/Abilene'
+topology_adjlist_file: 'graph.adjlist'
+nodes_traffic: 'Abilene_dataset.csv'
+edges_traffic: 'Link_counts.csv'
+root_matrix: 'Routing_matrix.csv'

@@ -1,0 +1,5 @@
+_target_: networkts.datasets.totem.TotemDataset.from_config
+root: 'd:/Onebox/reps/github/dynolab/networkts/data/Totem'
+traffic: 'traffic.csv'
+edges_traffic: 'Link_counts.csv'
+topology_adjlist_file: 'graph.adjlist'

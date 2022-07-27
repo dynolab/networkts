@@ -18,29 +18,50 @@ class Pemsd7Dataset(Dataset):
     # but we cannot use fields without default values after
     # fields with default values (declared in Dataset).
     # Though this can be fixed somehow, need to check  
-    conf: dict = None
     route_distances: np.ndarray = None
     n_stations: int = None
 
     @classmethod
-    def from_config(cls):
-        conf = CONF['datasets']['pemsd7']
-        root = os.path.normpath(conf['root'])
+    def from_config(cls,
+                    root: str,
+                    topology_adjlist_file: str,
+                    route_distances_file: str,
+                    speeds_file: str,
+                    url: str,
+                    ):
+        root = os.path.normpath(root)
         G = nx.read_adjlist(os.path.join(
                               root,
-                              conf['topology_adjlist_file']
+                              topology_adjlist_file
                             ),
                             create_using=nx.DiGraph)
         distances = pd.read_csv(os.path.join(
                                   root,
-                                  conf['route_distances_file']
+                                  route_distances_file
                                 ),
                                 header=None).to_numpy()
         speeds_df = pd.read_csv(os.path.join(
                                   root,
-                                  conf['speeds_file']
+                                  speeds_file
                                 ),
                                 header=None)
+#        conf = CONF['datasets']['pemsd7']
+#        root = os.path.normpath(conf['root'])
+#        G = nx.read_adjlist(os.path.join(
+#                              root,
+#                              conf['topology_adjlist_file']
+#                            ),
+#                            create_using=nx.DiGraph)
+#        distances = pd.read_csv(os.path.join(
+#                                  root,
+#                                  conf['route_distances_file']
+#                                ),
+#                                header=None).to_numpy()
+#        speeds_df = pd.read_csv(os.path.join(
+#                                  root,
+#                                  conf['speeds_file']
+#                                ),
+#                                header=None)
         speeds_df.rename(columns=lambda x: str(x), inplace=True)
         d = cls(
             name='PeMSD7',
@@ -48,7 +69,6 @@ class Pemsd7Dataset(Dataset):
             node_timeseries=NetworkTimeseries(
                 data=speeds_df,
                 data_label='Road speeds'),
-            conf=conf,
             route_distances=distances,
             n_stations=distances.shape[0],
         )
