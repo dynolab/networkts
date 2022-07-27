@@ -1,0 +1,2 @@
+_target_: networkts.decompositions.standard.MATarget
+num_previous_points: 100

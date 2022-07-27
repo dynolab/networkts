@@ -18,6 +18,7 @@ def main(cfg: DictConfig) -> None:
 
     # Main code
     forecaster = instantiate(cfg.forecaster)
+    decomp = instantiate(cfg.decomposition)
     dataset = call(cfg.dataset)
     print(OmegaConf.to_yaml(cfg))
     LOGGER.info(f'{os.getcwd()}')
