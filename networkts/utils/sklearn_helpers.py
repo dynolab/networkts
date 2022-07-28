@@ -1,5 +1,3 @@
-from functools import partial
-
 from sklearn.base import BaseEstimator, RegressorMixin
 
 
@@ -16,23 +14,15 @@ class SklearnWrapperForForecaster(RegressorMixin, BaseEstimator):
 
 
 def build_target_transformer(
-                            transform_class,
-                            pipe_or_estimator,
-                            func,
-                            inverse_func,
-                            check_inverse=False,
-                            params=None,
-                            inverse_params=None,
-                            ):
+                        transform_class,
+                        pipe_or_estimator,
+                        func,
+                        inverse_func,
+                        check_inverse=False,
+                        ):
     return transform_class(
-                            pipe_or_estimator,
-                            func=partial(
-                                    func,
-                                    params=params,
-                                    ),
-                            inverse_func=partial(
-                                    inverse_func,
-                                    params=inverse_params
-                                    ),
-                            check_inverse=check_inverse,
-                            )
+                        pipe_or_estimator,
+                        func=func,
+                        inverse_func=inverse_func,
+                        check_inverse=check_inverse,
+                        )
