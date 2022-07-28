@@ -36,6 +36,8 @@ class Dataset:
     node_timeseries: NetworkTimeseries = None  # each column corresponds to the node name
     edge_timeseries: NetworkTimeseries = None  # each column corresponds to the edge name
     node_pair_timeseries: NetworkTimeseries = None  # each column corresponds to the name of a pair of nodes
+    delta_time: int = None
+    period: int = None
 
     @property
     def node_count(self) -> int:

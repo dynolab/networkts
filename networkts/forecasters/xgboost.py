@@ -12,8 +12,13 @@ from networkts.utils.create_features import create_features
 class NtsXgboost(BaseForecaster):
     LOGGER = logging.getLogger(__qualname__)
 
-    def __init__(self, nthread=16):
+    def __init__(
+        self,
+        nthread: int = 16,
+        name: str = "XGB"
+    ):
         self.nthread = nthread
+        self.name = name
         super(BaseForecaster, self).__init__()
 
     def _fit(

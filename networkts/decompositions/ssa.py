@@ -28,11 +28,13 @@ class SSA(object):
         self,
         L: int = 50,
         noise_signal_split: int = 2,
-        save_mem: bool = True
+        save_mem: bool = True,
+        name: str = 'SSA'
     ):
         self._L = L
         self.noise_signal_split = noise_signal_split
         self.save_mem = save_mem
+        self.name = name
         self._N = None
         self.orig_TS = None
         self._K = None

@@ -7,9 +7,15 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 class NtsHoltWinters(BaseForecaster):
     LOGGER = logging.getLogger(__qualname__)
 
-    def __init__(self, seasonal='additive', seasonal_periods=0):
+    def __init__(
+        self,
+        seasonal: str = 'additive',
+        seasonal_periods: int = 0,
+        name: str = "HW"
+    ):
         self.seasonal = seasonal
         self.seasonal_periods = seasonal_periods
+        self.name = name
         super().__init__()
 
     def _fit(

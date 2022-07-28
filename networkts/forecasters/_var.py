@@ -13,11 +13,13 @@ class NtsVar(BaseForecaster):
         self,        
         maxlags: int = 1,
         trend: str = 'c',
-        ic: str = None
+        ic: str = None,
+        name: str = 'VAR'
     ):       
         self.maxlags = maxlags
         self.trend = trend
         self.ic = ic
+        self.name = name
         self._y = None
         super().__init__()
 

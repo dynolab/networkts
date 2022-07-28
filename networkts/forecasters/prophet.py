@@ -10,9 +10,15 @@ from networkts.utils.convert_time import time
 class NtsProphet(BaseForecaster):
     LOGGER = logging.getLogger(__qualname__)
 
-    def __init__(self, yearly_seasonality=False, weekly_seasonality=False):
+    def __init__(
+        self,
+        yearly_seasonality: bool = False,
+        weekly_seasonality: bool = False,
+        name: str = "Prophet"
+    ):
         self.yearly_seasonality = yearly_seasonality
         self.weekly_seasonality = weekly_seasonality
+        self.name = name
         super(BaseForecaster, self).__init__()
 
     def _fit(

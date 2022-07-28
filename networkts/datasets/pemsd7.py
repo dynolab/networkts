@@ -28,6 +28,9 @@ class Pemsd7Dataset(Dataset):
                     route_distances_file: str,
                     speeds_file: str,
                     url: str,
+                    delta_time: int,
+                    period: int,
+                    name: str,
                     ):
         root = os.path.normpath(root)
         G = nx.read_adjlist(os.path.join(
@@ -64,13 +67,15 @@ class Pemsd7Dataset(Dataset):
 #                                header=None)
         speeds_df.rename(columns=lambda x: str(x), inplace=True)
         d = cls(
-            name='PeMSD7',
+            name=name,
             topology=G,
             node_timeseries=NetworkTimeseries(
                 data=speeds_df,
                 data_label='Road speeds'),
             route_distances=distances,
             n_stations=distances.shape[0],
+            delta_time=delta_time,
+            period=period,
         )
         return d
 
