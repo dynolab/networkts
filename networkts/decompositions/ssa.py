@@ -38,7 +38,14 @@ class SSA(object):
         self._K = None
         self._V = None
         self._X_elem = None
+        self._X = None
         self.Wcorr = None
+        self.orig_TS = None
+        self._U = None 
+        self.Sigma = None 
+        self._VT = None
+        self._d = None
+        self.TS_comps = None
         super().__init__()
 
     def decompose_serie(self, tseries):
@@ -196,11 +203,18 @@ class SSA(object):
         plt.ylim(max_rnge+0.5, min-0.5)
 
     def transform(self, y):
-        y = np.array(y).reshape(-1)
-        self.decompose_serie(y)
-        self.save_memory()
-        self.calc_wcorr()
-        res = np.array(abs(self.reconstruct(slice(0, self.noise_signal_split))))
+        if len(y.shape) < 2:
+            self.decompose_serie(y)
+            self.save_memory()
+            self.calc_wcorr()
+            res = np.array(abs(self.reconstruct(slice(0, self.noise_signal_split))))
+        else:
+            res = np.empty(y.shape)
+            for j in range(y.shape[1]):
+                self.decompose_serie(y[:, j])
+                self.save_memory()
+                self.calc_wcorr()
+                res[:, j] = np.array(abs(self.reconstruct(slice(0, self.noise_signal_split))))
         return res
     
     def inverse_transform(self, y):
