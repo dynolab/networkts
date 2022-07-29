@@ -9,11 +9,13 @@ class NtsArima(BaseForecaster):
 
     def __init__(
         self,
-        order=(0, 0, 1),
-        seasonal_order=(0, 0, 0, 0)
+        order = (0, 0, 1),
+        seasonal_order = (0, 0, 0, 0),
+        name: str = 'ARIMA'
     ):
         self.order = order
         self.seasonal_order = seasonal_order
+        self.name = name
         super(BaseForecaster, self).__init__()
 
     def _fit(

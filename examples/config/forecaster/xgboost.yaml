@@ -1,2 +1,3 @@
 _target_: networkts.forecasters.xgboost.NtsXgboost
 nthread: 16
+name: XGB

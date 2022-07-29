@@ -4,3 +4,4 @@ drop: 0.1
 look_back: 1
 epochs: 100
 batch_size: 32
+name: LSTM

@@ -16,18 +16,20 @@ class NtsLstm(BaseForecaster):
     LOGGER = logging.getLogger(__qualname__)
 
     def __init__(
-                self,
-                lstm_units=64,
-                drop=0.1,
-                look_back=1,
-                epochs=100,
-                batch_size=32
-                ):
+            self,
+            lstm_units: int = 64,
+            drop: float = 0.1,
+            look_back: int = 1,
+            epochs: int = 100,
+            batch_size: int = 32,
+            name: str = 'LSTM'
+        ):
         self.lstm_units = lstm_units
         self.drop = drop
         self.look_back = look_back
         self.epochs = epochs
         self.batch_size = batch_size
+        self.name = name
         super().__init__()
 
     def _fit(

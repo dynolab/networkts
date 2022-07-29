@@ -26,12 +26,15 @@ class AbileneDataset(Dataset):
                     nodes_traffic: str,
                     edges_traffic: str,
                     root_matrix: str,
+                    delta_time: int,
+                    period: int,
+                    name: str,
                     ):
         root = os.path.normpath(root)
         G = nx.read_adjlist(os.path.join(root,
                                          topology_adjlist_file),
                             create_using=nx.DiGraph)
-        e2e_traffic_df = pd.read_csv(os.path.join(root,
+        node_traffic_df = pd.read_csv(os.path.join(root,
                                                   nodes_traffic),
                                 index_col=0)
         edge_traffic_df = pd.read_csv(os.path.join(root,
@@ -55,15 +58,17 @@ class AbileneDataset(Dataset):
 #                                                  conf['root_matrix']),
 #                                     index_col=0)
         d = cls(
-            name='Abilene',
             topology=G,
-            node_pair_timeseries=NetworkTimeseries(
-                data=e2e_traffic_df,
-                data_label='E2E traffic'),
+            node_timeseries=NetworkTimeseries(
+                data=node_traffic_df,
+                data_label='Node traffic'),
             edge_timeseries=NetworkTimeseries(
                 data=edge_traffic_df,
                 data_label='Edge traffic'),
             routing_matrix=routing_matrix,
+            delta_time=delta_time,
+            period=period,
+            name=name,
         )
         return d
 

@@ -5,7 +5,11 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 
 class LogTarget(object):
-    def __init__(self):
+    def __init__(
+        self,
+        name: str = "Log"
+    ):
+        self.name = name
         super().__init__()
 
     def transform(self, y):
@@ -16,9 +20,13 @@ class LogTarget(object):
     
 
 class BoxcoxTarget(object):
-    def __init__(self):
+    def __init__(
+        self,
+        name: str = "Boxcox"
+    ):
         self.lmbd = None
         self.is_fitted: bool = False
+        self.name = name
         super().__init__()
 
     def transform(self, y):
@@ -64,9 +72,11 @@ class BoxcoxTarget(object):
 class ESTarget(object):
     def __init__(
         self,
-        smoothing_level: float = 0.1
+        smoothing_level: float = 0.1,
+        name: str = 'Exp_smooth'
     ):
         self.smoothing_level = smoothing_level
+        self.name = name
         super().__init__()
 
     def transform(self, y):
@@ -94,9 +104,11 @@ class ESTarget(object):
 class MATarget(object):
     def __init__(
         self,
-        num_previous_points: int = 100
+        num_previous_points: int = 100,
+        name: str = 'Moving_avg'
     ):
         self.num_previous_points = num_previous_points
+        self.name = name
         super().__init__()
 
     def transform(self, y):

@@ -2,3 +2,4 @@ _target_: networkts.decompositions.ssa.SSA
 L: 50
 noise_signal_split: 2
 save_mem: True
+name: ssa

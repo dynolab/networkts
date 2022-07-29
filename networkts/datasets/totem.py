@@ -17,8 +17,11 @@ class TotemDataset(Dataset):
     def from_config(cls,
                     root: str,
                     topology_adjlist_file: str,
-                    traffic: str,
+                    nodes_traffic: str,
                     edges_traffic: str,
+                    delta_time: int,
+                    period: int,
+                    name: str,
                     ):
         root = os.path.normpath(root)
         G = nx.read_adjlist(os.path.join(
@@ -26,9 +29,9 @@ class TotemDataset(Dataset):
                               topology_adjlist_file
                             ),
                             create_using=nx.DiGraph)
-        e2e_traffic_df = pd.read_csv(os.path.join(
+        node_traffic_df = pd.read_csv(os.path.join(
                                        root,
-                                       traffic
+                                       nodes_traffic
                                      ),
                                      index_col=0)
         edge_traffic_df = pd.read_csv(os.path.join(
@@ -55,14 +58,16 @@ class TotemDataset(Dataset):
 #                                      ),
 #                                      index_col=0)
         d = cls(
-            name='Totem',
             topology=G,
-            node_pair_timeseries=NetworkTimeseries(
-                data=e2e_traffic_df,
-                data_label='E2E traffic'),
+            node_timeseries=NetworkTimeseries(
+                data=node_traffic_df,
+                data_label='Node traffic'),
             edge_timeseries=NetworkTimeseries(
                 data=edge_traffic_df,
                 data_label='Edge traffic'),
+            delta_time=delta_time,
+            period=period,
+            name=name,
         )
         return d
 

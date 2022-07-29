@@ -1,4 +1,5 @@
 _target_: networkts.forecasters.autoreg.NtsAutoreg
-lags: 1
-seasonal: False
-period: null
+lags: 7
+seasonal: True
+period: ${dataset.period}
+name: AutoReg

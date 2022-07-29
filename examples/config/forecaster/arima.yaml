@@ -1,3 +1,4 @@
 _target_: networkts.forecasters.arima.NtsArima
 order: [0, 0, 1]
 seasonal_order: [0, 0, 0, 0]
+name: ARIMA

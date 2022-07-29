@@ -11,13 +11,15 @@ class NtsAutoreg(BaseForecaster):
 
     def __init__(
         self,
-        lags=1,
-        seasonal=False,
-        period=None
+        lags: int = 1,
+        seasonal: bool = False,
+        period: int = None,
+        name: str = "AR"
     ):
         self.lags = lags
         self.seasonal = seasonal
         self.period = period
+        self.name = name
         self._y = None
         super(BaseForecaster, self).__init__()
 

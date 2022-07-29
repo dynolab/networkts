@@ -1,40 +1,40 @@
 import os
 import warnings
 import pickle
+import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from omegaconf import DictConfig, OmegaConf
+import hydra
+from hydra.utils import instantiate, call
+
 import networkts
-from networkts.utils import common
-from networkts.decompositions.basic import *
 
 
-if __name__ == '__main__':
+LOGGER = logging.getLogger(__name__)
+
+@hydra.main(version_base=None, config_path='../config', config_name='config')
+def main(cfg: DictConfig) -> None:
+    LOGGER.info(f'{os.getcwd()}')
     warnings.filterwarnings('ignore')
-    plt.style.use('config/default.mplstyle')
-    common.set_config('config/config.yaml')
 
-    df = pd.read_csv(
-            os.path.join(
-                os.getcwd(),
-                common.CONF['datasets']['totem']['root'],
-                common.CONF['datasets']['totem']['edges_traffic']
-                ),
-            index_col=0,     # abilene, totem
-            # header=None,   # pemsd7
-            )
+    dataset = call(cfg.dataset)    
+    df = dataset.edge_timeseries.data
 
-    for el in df.columns.values:
-        df.loc[df[el] < 1000, el] = 1000
+    # setting the low limit for abilene's, totem's traffic
+    if dataset.name in ['Abilene', 'Totem']:
+        for feature in df.columns.values:
+            df.loc[df[feature] < 1000, feature] = 1000
 
     train_size = 4000
     test_size = 500
-    period = 96
-    delta_time = 15
+    period = dataset.period
+    delta_time = dataset.delat_time
     feature = df.columns.values[44]
-    ind = np.array([el*delta_time for el in range(df.shape[0])])
+    ind = df.index.values
 
     # plot validation score
     from networkts.plots.validation import plot_valid_score
@@ -42,6 +42,7 @@ if __name__ == '__main__':
     plt.show()
 
     # plot score distribution by serie
+    decomposition = instantiate(cfg.decomposition)
     from networkts.plots.validation import plot_score_distribution_by_serie
     fig, ax = plot_score_distribution_by_serie(
         df[feature].values,
@@ -51,7 +52,11 @@ if __name__ == '__main__':
         3000,
         f'AR, Window size = 3000',
     )
-    ax[0].plot(moving_avg(df[feature].values, [30]), color='g', label='m_a')
+    ax[0].plot(
+        decomposition.transform(df[feature].values),
+        color='g',
+        label=decomposition.name
+        )
     ax[0].legend()
     plt.show()
 

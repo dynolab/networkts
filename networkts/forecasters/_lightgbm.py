@@ -13,16 +13,18 @@ class NtsLightgbm(BaseForecaster):
 
     def __init__(
         self,
-        num_round=1000,
-        num_leaves=32,
-        num_threads=16,
-        learning_rate=0.1
+        num_round: int = 1000,
+        num_leaves: int = 32,
+        num_threads: int = 16,
+        learning_rate: float = 0.1,
+        name: str = 'LightGBM'
     ):
         self._is_fitted = False
         self.num_round = num_round
         self.learning_rate = learning_rate
         self.num_leaves = num_leaves
         self.num_threads = num_threads
+        self.name = name
         self._y = None
         self._X = None
         self.params = {
