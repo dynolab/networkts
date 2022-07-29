@@ -1,4 +1,16 @@
+hydra:
+  run:
+    dir: hydra_outputs/${dataset.name}/${forecaster.name}/${decomposition.name}/${now:%Y-%m-%d_%H-%M-%S}
+
 third_party:
   rscripts_dir: 'rscripts'
+
 hypothesis_testing:
   mcleod_li_test_script_name: 'mcleod_li_test.r'
+
+multiprocessing:
+  nthread: 16
+
+logger:
+  format: '%(asctime)s, %(name)s: %(message)s'
+  date_format: '%d/%m/%Y %I:%M:%S %p'

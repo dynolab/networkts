@@ -1,0 +1,6 @@
+_target_: networkts.forecasters._lightgbm.NtsLightgbm
+num_round: 1000
+num_leaves: 32
+num_threads: 16
+learning_rate: 0.1
+name: LightGBM

@@ -1,3 +1,4 @@
 _target_: networkts.forecasters.prophet.NtsProphet
 yearly_seasonality: False
 weekly_seasonality: False
+name: Prophet
