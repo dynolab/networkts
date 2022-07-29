@@ -20,6 +20,7 @@ class NtsAutoreg(BaseForecaster):
         self.seasonal = seasonal
         self.period = period
         self.name = name
+        self.stable = True
         self._y = None
         super(BaseForecaster, self).__init__()
 
@@ -31,7 +32,7 @@ class NtsAutoreg(BaseForecaster):
         try:
             self._model = AutoReg(
                                 endog=as_numpy_array(y),
-                                exog=as_numpy_array(X, drop_first_column=True),
+                                exog=as_numpy_array(X),
                                 lags=self.lags,
                                 seasonal=self.seasonal,
                                 period=self.period,
@@ -46,8 +47,12 @@ class NtsAutoreg(BaseForecaster):
                                 seasonal=self.seasonal,
                                 period=self.period,
                                 ).fit()
-        if min(abs(self._model.roots)) < 1:
+        min_root = min(abs(self._model.roots))
+        if min_root < 1:
+            self.stable = False
             self._y = y
+        else:
+            self.stable = True
         return self
 
     def _predict(
@@ -55,8 +60,8 @@ class NtsAutoreg(BaseForecaster):
         X: Timeseries,
     ):
         n_timesteps = X.shape[0]
-        if self._y is not None:
-            y_pred = np.array([np.mean(self._y) for _ in range(n_timesteps)])
+        if self.stable:
+            y_pred = self._model.forecast(steps=n_timesteps, exog=X)
         else:
-            y_pred = self._model.forecast(n_timesteps)
+            y_pred = np.array([np.mean(self._y) for _ in range(n_timesteps)])
         return y_pred
