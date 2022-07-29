@@ -34,7 +34,7 @@ class AbileneDataset(Dataset):
         G = nx.read_adjlist(os.path.join(root,
                                          topology_adjlist_file),
                             create_using=nx.DiGraph)
-        e2e_traffic_df = pd.read_csv(os.path.join(root,
+        node_traffic_df = pd.read_csv(os.path.join(root,
                                                   nodes_traffic),
                                 index_col=0)
         edge_traffic_df = pd.read_csv(os.path.join(root,
@@ -59,9 +59,9 @@ class AbileneDataset(Dataset):
 #                                     index_col=0)
         d = cls(
             topology=G,
-            node_pair_timeseries=NetworkTimeseries(
-                data=e2e_traffic_df,
-                data_label='E2E traffic'),
+            node_timeseries=NetworkTimeseries(
+                data=node_traffic_df,
+                data_label='Node traffic'),
             edge_timeseries=NetworkTimeseries(
                 data=edge_traffic_df,
                 data_label='Edge traffic'),
