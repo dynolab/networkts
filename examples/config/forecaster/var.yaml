@@ -1,5 +1,5 @@
 _target_: networkts.forecasters._var.NtsVar
 maxlags: 300
-trend: ctt
+trend: n
 ic: None
 name: VAR

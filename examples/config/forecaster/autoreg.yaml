@@ -2,4 +2,5 @@ _target_: networkts.forecasters.autoreg.NtsAutoreg
 lags: 7
 seasonal: True
 period: ${dataset.period}
+trend: 'n'
 name: AutoReg

@@ -53,10 +53,22 @@ class NtsVar(BaseForecaster):
         n_timesteps = X.shape[0]
         if self.stable:
             y_pred = self._model.forecast(
-                                    y=self._model.endog,
+                                    y=self._model.endog[-self.maxlags:],
                                     steps=n_timesteps,
-                                    exog_future=X[-n_timesteps:]
+                                    exog_future=X
                                     )[:, 0]
         else:
             y_pred = np.array([np.mean(self._y) for _ in range(n_timesteps)])
         return y_pred
+
+    def insample(
+        self,
+        X: Timeseries,
+    ):
+        n_timesteps = X.shape[0]
+        in_sample = self._model.forecast(
+                                    y=self._model.endog[:self.maxlags],
+                                    steps=n_timesteps - self.maxlags,
+                                    exog_future=X[self.maxlags:]
+                                    )[:, 0]
+        return in_sample
