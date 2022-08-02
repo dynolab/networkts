@@ -15,12 +15,16 @@ class NtsAutoreg(BaseForecaster):
         seasonal: bool = False,
         period: int = None,
         trend: str = 'n',
+        cov_type: str = 'nonrobust',
+        cov_kwds: dict = None,
         name: str = "AR",
     ):
         self.lags = lags
         self.seasonal = seasonal
         self.period = period
         self.trend = trend
+        self.cov_type = cov_type
+        self.cov_kwds = cov_kwds
         self.name = name
         self.stable = True
         self._y = None
@@ -39,7 +43,10 @@ class NtsAutoreg(BaseForecaster):
                                 seasonal=self.seasonal,
                                 period=self.period,
                                 trend=self.trend,
-                                ).fit()
+                                ).fit(
+                                    cov_type=self.cov_type,
+                                    cov_kwds=self.cov_kwds
+                                    )
         except:
             self.LOGGER.warning(f'AR failed to fit with lags = {self.lags} '
                                 f'so fall back to lags = 1')
@@ -50,7 +57,10 @@ class NtsAutoreg(BaseForecaster):
                                 seasonal=self.seasonal,
                                 period=self.period,
                                 trend=self.trend,
-                                ).fit()
+                                ).fit(
+                                    cov_type=self.cov_type,
+                                    cov_kwds=self.cov_kwds
+                                    )
         min_root = min(abs(self._model.roots))
         if min_root < 1:
             self.stable = False
