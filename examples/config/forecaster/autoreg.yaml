@@ -1,5 +1,5 @@
 _target_: networkts.forecasters.autoreg.NtsAutoreg
-lags: None
+lags: 10
 seasonal: True
 period: ${dataset.period}
 trend: n

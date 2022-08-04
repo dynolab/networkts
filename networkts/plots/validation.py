@@ -151,16 +151,18 @@ def plot_forecast(
         test: np.array or list,
         test_steps: np.array or list,
         pred: np.array or list,
+        log: bool = True,
         title: str = None,
         name: str = None,
         ):
-    plt.figure(figsize=(16, 8))
+    plt.figure(figsize=(20, 8))
     if title is not None:
         plt.title(title)
     plt.plot(train_steps, train, label='train')
     plt.plot(test_steps, test, label='real')
     plt.plot(test_steps, pred, label='forecast', lw=1)
-    plt.yscale('log')
+    if log:
+        plt.yscale('log')
     plt.legend()
     if name is not None:
         plt.savefig(name)

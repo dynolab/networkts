@@ -34,8 +34,8 @@ if __name__ == '__main__':
             seasonal=True,
             period=period,
             trend='n',
-            #cov_type='HAC',
-            #cov_kwds={'maxlags': maxlags},
+            cov_type='HAC',
+            cov_kwds={'maxlags': maxlags},
         ).fit(
             y=data[feature].values[:train_size],
             X=dummy_vars.values[:train_size],
