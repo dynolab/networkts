@@ -29,19 +29,39 @@ def var3_generator(
     
     return x, y, z, m
 
-if __name__ == '__main__':
-    series_size = 5000
-    x, y, z, m = var3_generator(series_size)
-    data = pd.DataFrame(np.array([x, y, z, m]).T, columns=['x', 'y', 'z', 'm'], index=range(series_size))
+def var3_generator_with_season(
+    series_size: int = 5000,
+    season: int = 10,
+):
+    white_noise = np.random.normal(0, 1, size=(series_size, 4))
+    m = np.zeros(series_size)
+    for j in range(1, series_size):
+        m[j] = 0.7*m[j-1] + white_noise[j-1, 0]
+        if j%season == 0:
+            m[j] = abs(m[j])*10
 
+    y = np.zeros(series_size)
+    for j in range(1, series_size):
+        y[j] = 0.8*y[j-1] + 0.8*m[j-1] + white_noise[j-1, 1]
+    
+    x = np.zeros(series_size)
+    for j in range(1, series_size):
+        x[j] = 0.7*x[j-1] - 0.8*y[j-1] + white_noise[j-1, 2]
+    
+    z = np.zeros(series_size)
+    for j in range(1, series_size):
+        z[j] = 0.5*z[j-1] + 0.5*y[j-2] + 0.6*m[j-3] + white_noise[j-1, 3]
+    
+    return x, y, z, m
+
+if __name__ == '__main__':
+    series_size = 2500
+    x, y, z, m = var3_generator_with_season(series_size, 10)
+    data = pd.DataFrame(np.array([x, y, z, m]).T, columns=['x', 'y', 'z', 'm'], index=range(series_size))
+    print(data)
     fig, ax = plt.subplots(4, 1, sharex=True, figsize=(18, 10))
-    ax[0].plot(x)
-    ax[0].set_title('X')
-    ax[1].plot(y)
-    ax[1].set_title('Y')
-    ax[2].plot(z)
-    ax[2].set_title('Z')
-    ax[3].plot(m)
-    ax[3].set_title('M')
+    for j in range(data.shape[1]):
+        ax[j].plot(data.iloc[:, j])
+        ax[j].set_title(data.columns.values[j])
     plt.show()
 
