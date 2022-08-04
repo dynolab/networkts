@@ -14,12 +14,19 @@ class NtsAutoreg(BaseForecaster):
         lags: int = 1,
         seasonal: bool = False,
         period: int = None,
-        name: str = "AR"
+        trend: str = 'n',
+        cov_type: str = 'nonrobust',
+        cov_kwds: dict = None,
+        name: str = "AR",
     ):
         self.lags = lags
         self.seasonal = seasonal
         self.period = period
+        self.trend = trend
+        self.cov_type = cov_type
+        self.cov_kwds = cov_kwds
         self.name = name
+        self.stable = True
         self._y = None
         super(BaseForecaster, self).__init__()
 
@@ -31,23 +38,35 @@ class NtsAutoreg(BaseForecaster):
         try:
             self._model = AutoReg(
                                 endog=as_numpy_array(y),
-                                exog=as_numpy_array(X, drop_first_column=True),
+                                exog=as_numpy_array(X),
                                 lags=self.lags,
                                 seasonal=self.seasonal,
                                 period=self.period,
-                                ).fit()
+                                trend=self.trend,
+                                ).fit(
+                                    cov_type=self.cov_type,
+                                    cov_kwds=self.cov_kwds
+                                    )
         except:
             self.LOGGER.warning(f'AR failed to fit with lags = {self.lags} '
                                 f'so fall back to lags = 1')
             self._model = AutoReg(
                                 endog=as_numpy_array(y),
-                                exog=as_numpy_array(X, drop_first_column=True),
+                                exog=as_numpy_array(X),
                                 lags=1,
                                 seasonal=self.seasonal,
                                 period=self.period,
-                                ).fit()
-        if min(abs(self._model.roots)) < 1:
+                                trend=self.trend,
+                                ).fit(
+                                    cov_type=self.cov_type,
+                                    cov_kwds=self.cov_kwds
+                                    )
+        min_root = min(abs(self._model.roots))
+        if min_root < 1:
+            self.stable = False
             self._y = y
+        else:
+            self.stable = True
         return self
 
     def _predict(
@@ -55,8 +74,23 @@ class NtsAutoreg(BaseForecaster):
         X: Timeseries,
     ):
         n_timesteps = X.shape[0]
-        if self._y is not None:
-            y_pred = np.array([np.mean(self._y) for _ in range(n_timesteps)])
+        if self.stable:
+            y_pred = self._model.forecast(
+                                    steps=n_timesteps,
+                                    exog=X
+                                    )
         else:
-            y_pred = self._model.forecast(n_timesteps)
+            y_pred = np.array([np.mean(self._y) for _ in range(n_timesteps)])
         return y_pred
+    
+    def insample(
+        self,
+        X: Timeseries,
+    ):
+        n_timesteps = X.shape[0]
+        in_sample = self._model.predict(
+                                    start=0,
+                                    end=n_timesteps-1,
+                                    exog=X
+                                    )
+        return in_sample

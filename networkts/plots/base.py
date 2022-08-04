@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 def plot_traffic(
         serie,
+        log: bool = True,
         title=None,
         name=None,
         ):
@@ -12,7 +13,8 @@ def plot_traffic(
     if title is not None:
         fig.suptitle(title)
     ax.plot(serie, color='b', label='real serie')
-    ax.set_yscale('log')
+    if log:
+        ax.set_yscale('log')
     ax.set_xlabel('time, min')
     ax.set_ylabel('traffic')
     if name is not None:

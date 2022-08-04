@@ -1,5 +1,9 @@
 _target_: networkts.forecasters.autoreg.NtsAutoreg
-lags: 7
+lags: None
 seasonal: True
 period: ${dataset.period}
+trend: n
+cov_type: HAC
+cov_kwds:
+  maxlags: 300
 name: AutoReg

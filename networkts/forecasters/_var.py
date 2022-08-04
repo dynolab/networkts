@@ -20,6 +20,7 @@ class NtsVar(BaseForecaster):
         self.trend = trend
         self.ic = ic
         self.name = name
+        self.stable = True
         self._y = None
         super().__init__()
 
@@ -28,6 +29,7 @@ class NtsVar(BaseForecaster):
         X: Timeseries,
         y: Timeseries,
     ):
+        self._y = None
         self._model = VAR(
                         endog=as_numpy_array(y),
                         exog=as_numpy_array(X),
@@ -35,9 +37,13 @@ class NtsVar(BaseForecaster):
                             maxlags=self.maxlags,
                             trend=self.trend
                             )
-        
-        if max(abs(self._model.roots)) > 1:
-            self._y = y[0]
+        n = self._model.roots.shape[0]//y.shape[1]
+        min_root = min(abs(self._model.roots[:n]))
+        if min_root < 1:
+            self.stable = False
+            self._y = y[:, 0]
+        else:
+            self.stable = True
         return self
 
     def _predict(
@@ -45,12 +51,24 @@ class NtsVar(BaseForecaster):
         X: Timeseries,
     ):
         n_timesteps = X.shape[0]
-        if self._y is not None:
-            y_pred = np.array([np.mean(self._y) for _ in range(n_timesteps)])
-        else:
+        if self.stable:
             y_pred = self._model.forecast(
-                                    y=self._model.endog,
+                                    y=self._model.endog[-self.maxlags:],
                                     steps=n_timesteps,
-                                    exog_future=X[-n_timesteps:]
+                                    exog_future=X
                                     )[:, 0]
+        else:
+            y_pred = np.array([np.mean(self._y) for _ in range(n_timesteps)])
         return y_pred
+
+    def insample(
+        self,
+        X: Timeseries,
+    ):
+        n_timesteps = X.shape[0]
+        in_sample = self._model.forecast(
+                                    y=self._model.endog[:self.maxlags],
+                                    steps=n_timesteps - self.maxlags,
+                                    exog_future=X[self.maxlags:]
+                                    )[:, 0]
+        return in_sample
