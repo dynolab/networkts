@@ -1,5 +1,5 @@
 _target_: networkts.datasets.pemsd7.Pemsd7Dataset.from_config
-root: 'd:/Onebox/reps/github/dynolab/networkts/data/PeMSD7'
+root: 'd:/datasets/traffic_forecasting/preprocessed/PeMSD7'
 url: 'https://github.com/VeritasYin/STGCN_IJCAI-18/raw/master/data_loader/PeMS-M.zip'
 route_distances_file: 'W_228.csv'
 speeds_file: 'V_228.csv'

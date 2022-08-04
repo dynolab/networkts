@@ -1,5 +1,5 @@
 _target_: networkts.datasets.abilene.AbileneDataset.from_config
-root: 'd:/Onebox/reps/github/dynolab/networkts/data/Abilene'
+root: 'd:/datasets/traffic_forecasting/preprocessed/Abilene'
 topology_adjlist_file: 'graph.adjlist'
 nodes_traffic: 'nodes_traffic.csv'
 edges_traffic: 'Link_counts.csv'
