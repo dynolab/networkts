@@ -12,7 +12,7 @@ class NtsVar(BaseForecaster):
     def __init__(
         self,        
         maxlags: int = 1,
-        trend: str = 'c',
+        trend: str = 'n',
         ic: str = None,
         name: str = 'VAR'
     ):       

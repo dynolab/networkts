@@ -38,7 +38,7 @@ def var3_generator_with_season(
     for j in range(1, series_size):
         m[j] = 0.7*m[j-1] + white_noise[j-1, 0]
         if j%season == 0:
-            m[j] = abs(m[j])*10
+            m[j] = abs(m[j]) + 10
 
     y = np.zeros(series_size)
     for j in range(1, series_size):
