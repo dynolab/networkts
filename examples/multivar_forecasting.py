@@ -5,7 +5,6 @@ import logging
 
 import numpy as np
 import pandas as pd
-import networkx as nx
 from datetime import datetime
 from sklearn.compose import TransformedTargetRegressor
 from threadpoolctl import ThreadpoolController, threadpool_limits
@@ -33,12 +32,13 @@ def main(cfg: DictConfig) -> None:
     def forecast():
         dataset = call(cfg.dataset)    
         df = dataset.node_timeseries.data
+        df.columns = df.columns.values.astype(str)
                 
         test_size = 500
         period = dataset.period
         delta_time = dataset.delta_time
         
-        df.index = np.array([el*delta_time for el in range(df.shape[0])])   # for pemsd7
+        df.index = np.array([el*delta_time for el in range(df.shape[0])])
 
         # setting the low limit for abilene's, totem's traffic
         if dataset.name in ['Abilene', 'Totem']:
@@ -59,16 +59,16 @@ def main(cfg: DictConfig) -> None:
             for i, feature in enumerate(list(G.nodes)):
                 neighbors = list(G.neighbors(feature))
                 if len(neighbors):
-                    print(f'{i+1}/{len(df.columns.values)}')
+                    print(f'{i+1}/{df.shape[1]}')
                     cols = np.array([feature] + neighbors).astype(str)
                     data = df[cols]
 
                     cross_val = Valid(
-                                    n_test_timesteps=test_size,
-                                    n_training_timesteps=train_size,
-                                    n_splits=df.shape[0]//test_size - train_size//test_size,
-                                    max_train_size=np.Inf
-                                    )
+                                n_test_timesteps=test_size,
+                                n_training_timesteps=train_size,
+                                n_splits=df.shape[0]//test_size - train_size//test_size,
+                                max_train_size=np.Inf
+                                )
                     
                     forecaster = instantiate(cfg.forecaster)
                     

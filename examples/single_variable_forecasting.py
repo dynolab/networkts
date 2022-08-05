@@ -30,7 +30,7 @@ def main(cfg: DictConfig) -> None:
     @threadpool_limits.wrap(limits=nthread, user_api='blas')
     def forecast():
         dataset = call(cfg.dataset)    
-        df = dataset.edge_timeseries.data
+        df = dataset.node_timeseries.data
                 
         test_size = 500
         period = dataset.period
@@ -49,7 +49,7 @@ def main(cfg: DictConfig) -> None:
             score_mae = []
             time = datetime.now()
             for i, feature in enumerate(df.columns.values):
-                print(f'{i+1}/{len(df.columns.values)}')
+                print(f'{i+1}/{df.shape[1]}')
                 cross_val = Valid(
                                 n_test_timesteps=test_size,
                                 n_training_timesteps=train_size,
@@ -81,7 +81,7 @@ def main(cfg: DictConfig) -> None:
 
             score_mae = np.array(score_mae).reshape(-1)
             score_mape = np.array(score_mape).reshape(-1)
-
+            
             score_dict = {
                 'Avg_mape': np.mean(score_mape),
                 'Mape_median': np.median(score_mape),
