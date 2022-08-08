@@ -143,3 +143,7 @@ dmypy.json
 
 # Config
 config/config.yaml
+
+# Figures & some log information
+tests/figs
+tests/log.txt

@@ -15,12 +15,13 @@ from networkts.utils.create_features import create_features
 
 if __name__ == '__main__':
     series_size = 2500
-    x, y, z, m = var3_generator_with_season(series_size, 288)
-    data = pd.DataFrame(np.array([x, y, z, m]).T, columns=['x', 'y', 'z', 'm'], index=range(series_size))
     period = 288
-    maxlags = 300
+    x, y, z, m = var3_generator_with_season(series_size, period)
+    data = pd.DataFrame(np.array([x, y, z, m]).T, columns=['x', 'y', 'z', 'm'], index=range(series_size))
+    maxlags = 3
+    lags = 3
 
-    dummy_vars_no_period = data.index#create_features([time(el) for el in data.index.values])
+    dummy_vars_no_period = data.index
     dummy_vars = create_dummy_vars(data.index, period)
 
     train_size = 2000
@@ -30,12 +31,10 @@ if __name__ == '__main__':
     insample = []
     for feature in data.columns:
         model_ar = NtsAutoreg(
-            lags=7,
+            lags=lags,
             seasonal=True,
             period=period,
-            trend='n',
-            cov_type='HAC',
-            cov_kwds={'maxlags': maxlags},
+            trend='n'
         ).fit(
             y=data[feature].values[:train_size],
             X=dummy_vars.values[:train_size],
@@ -43,6 +42,8 @@ if __name__ == '__main__':
 
         insample.append( model_ar.insample(X=dummy_vars.values[:train_size]))
         pred.append(model_ar.predict(X=dummy_vars.values[train_size:]))
+
+        #print(f'Summary of AR with period, {feature}-node\n{model_ar.summary()}\n')
 
     insample = np.array(insample)
     pred = np.array(pred)
@@ -54,8 +55,8 @@ if __name__ == '__main__':
         ax[j].plot(data.index[:train_size], insample[j, :], label='in-sample')
         ax[j].legend()
         ax[j].set_title(
-            f'node-{data.columns[j]}, mape: {mape(data.iloc[7:train_size, j], insample[j, 7:]):.3f}, '
-            f'mae: {mae(data.iloc[7:train_size, j], insample[j, 7:]):.3f}'
+            f'node-{data.columns[j]}, mape: {mape(data.iloc[lags:train_size, j], insample[j, lags:]):.3f}, '
+            f'mae: {mae(data.iloc[lags:train_size, j], insample[j, lags:]):.3f}'
         )
     plt.savefig('tests/figs/insample_ar_with_season.png', dpi=200)
     
@@ -71,17 +72,15 @@ if __name__ == '__main__':
             f'mae: {mae(data.iloc[train_size:, j], pred[j]):.3f}'
         )
     plt.savefig('tests/figs/outsample_ar_with_season.png', dpi=200)
-    '''
+
     # AR without period
     pred = []
     insample = []
     for feature in data.columns:
         model_ar = NtsAutoreg(
-            lags=7,
+            lags=lags,
             seasonal=False,
-            trend='n',
-            cov_type='HAC',
-            cov_kwds={'maxlags': maxlags},
+            trend='n'
         ).fit(
             y=data[feature].values[:train_size],
             X=dummy_vars_no_period.values[:train_size],
@@ -89,6 +88,8 @@ if __name__ == '__main__':
 
         insample.append( model_ar.insample(X=dummy_vars_no_period.values[:train_size]))
         pred.append(model_ar.predict(X=dummy_vars_no_period.values[train_size:]))
+
+        #print(f'Summary of AR without period, {feature}-node\n{model_ar.summary()}\n')
 
     insample = np.array(insample)
     pred = np.array(pred)
@@ -100,8 +101,8 @@ if __name__ == '__main__':
         ax[j].plot(data.index[:train_size], insample[j, :], label='in-sample')
         ax[j].legend()
         ax[j].set_title(
-            f'node-{data.columns[j]}, mape: {mape(data.iloc[7:train_size, j], insample[j, 7:]):.3f}, '
-            f'mae: {mae(data.iloc[7:train_size, j], insample[j, 7:]):.3f}'
+            f'node-{data.columns[j]}, mape: {mape(data.iloc[lags:train_size, j], insample[j, lags:]):.3f}, '
+            f'mae: {mae(data.iloc[lags:train_size, j], insample[j, lags:]):.3f}'
         )
     plt.savefig('tests/figs/insample_ar_without_period.png', dpi=200)
     
@@ -117,7 +118,8 @@ if __name__ == '__main__':
             f'mae: {mae(data.iloc[train_size:, j], pred[j]):.3f}'
         )
     plt.savefig('tests/figs/outsample_ar_without_period.png', dpi=200)
-    '''
+    
+    ###
     # VAR with period
     model_var = NtsVar(
         maxlags=maxlags,
@@ -154,7 +156,9 @@ if __name__ == '__main__':
             f'mae: {mae(data.iloc[train_size:, j], pred[:, j]):.3f}'
         )
     plt.savefig('tests/figs/outsample_var_with_season.png', dpi=200)
-    '''
+
+    print(f'{model_var.summary()}\n')
+
     # VAR without period
     model_var = NtsVar(
         maxlags=maxlags,
@@ -191,4 +195,5 @@ if __name__ == '__main__':
             f'mae: {mae(data.iloc[train_size:, j], pred[:, j]):.3f}'
         )
     plt.savefig('tests/figs/outsample_var_without_period.png', dpi=200)
-    '''
+
+    print(f'{model_var.summary()}\n')
