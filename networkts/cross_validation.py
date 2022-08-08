@@ -225,6 +225,8 @@ class ValidationBasedOnRollingForecastingOrigin:
         score = []
         if len(y_true.shape) > 1:
             y_true = y_true[:, 0]
+        if len(y_pred.shape) > 1:
+            y_pred = y_pred[:, 0]
         y_true = y_true.flatten()
         y_pred = y_pred.flatten()
         for m in self.metric:

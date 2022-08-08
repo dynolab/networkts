@@ -56,7 +56,7 @@ class NtsVar(BaseForecaster):
                                     y=self._model.endog[-self.maxlags:],
                                     steps=n_timesteps,
                                     exog_future=X
-                                    )[:, 0]
+                                    )
         else:
             y_pred = np.array([np.mean(self._y) for _ in range(n_timesteps)])
         return y_pred
@@ -70,5 +70,8 @@ class NtsVar(BaseForecaster):
                                     y=self._model.endog[:self.maxlags],
                                     steps=n_timesteps - self.maxlags,
                                     exog_future=X[self.maxlags:]
-                                    )[:, 0]
+                                    )
         return in_sample
+
+    def summary(self):
+        return self._model.summary()

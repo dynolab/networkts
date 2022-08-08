@@ -94,3 +94,6 @@ class NtsAutoreg(BaseForecaster):
                                     exog=X
                                     )
         return in_sample
+    
+    def summary(self):
+        return self._model.summary()
