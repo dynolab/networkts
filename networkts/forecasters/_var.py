@@ -30,13 +30,24 @@ class NtsVar(BaseForecaster):
         y: Timeseries,
     ):
         self._y = None
-        self._model = VAR(
-                        endog=as_numpy_array(y),
-                        exog=as_numpy_array(X),
-                        ).fit(
-                            maxlags=self.maxlags,
-                            trend=self.trend
-                            )
+        try:
+            self._model = VAR(
+                            endog=as_numpy_array(y),
+                            exog=as_numpy_array(X),
+                            ).fit(
+                                maxlags=self.maxlags,
+                                trend=self.trend
+                                )
+        except:
+            self.LOGGER.warning(f'VAR failed to fit with maxlags = {self.maxlags} '
+                                f'so fall back to maxlags = 1')
+            self._model = VAR(
+                            endog=as_numpy_array(y),
+                            exog=as_numpy_array(X),
+                            ).fit(
+                                maxlags=1,
+                                trend=self.trend
+                                )
         n = self._model.roots.shape[0]//y.shape[1]
         min_root = min(abs(self._model.roots[:n]))
         if min_root < 1:

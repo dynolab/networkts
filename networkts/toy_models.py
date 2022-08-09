@@ -55,13 +55,16 @@ def var3_generator_with_season(
     return x, y, z, m
 
 if __name__ == '__main__':
-    series_size = 2500
-    x, y, z, m = var3_generator_with_season(series_size, 10)
-    data = pd.DataFrame(np.array([x, y, z, m]).T, columns=['x', 'y', 'z', 'm'], index=range(series_size))
-    print(data)
+    series_size = 6000
+    x, y, z, m = var3_generator_with_season(series_size, 288)
+    data = pd.DataFrame(np.array([x, y, z, m]).T, columns=['X', 'Y', 'Z', 'M'], index=range(series_size))
+
     fig, ax = plt.subplots(4, 1, sharex=True, figsize=(18, 10))
+    fig.suptitle("Toy VAR(3) process")
+    ax[-1].set_xlabel('Time point')
     for j in range(data.shape[1]):
         ax[j].plot(data.iloc[:, j])
-        ax[j].set_title(data.columns.values[j])
+        ax[j].set_ylabel(data.columns.values[j], rotation=0)
+    plt.savefig('tests/figs/toy_example.png', dpi=200)
     plt.show()
 
