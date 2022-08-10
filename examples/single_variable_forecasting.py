@@ -49,7 +49,7 @@ def main(cfg: DictConfig) -> None:
             score_mae = []
             time = datetime.now()
             for i, feature in enumerate(df.columns.values):
-                print(f'{i+1}/{df.shape[1]}')
+                LOGGER.info(f'{i+1}/{df.shape[1]}, {feature} node')
                 cross_val = Valid(
                                 n_test_timesteps=test_size,
                                 n_training_timesteps=train_size,
@@ -83,14 +83,21 @@ def main(cfg: DictConfig) -> None:
             score_mape = np.array(score_mape).reshape(-1)
             
             score_dict = {
-                'Avg_mape': np.mean(score_mape),
-                'Mape_median': np.median(score_mape),
-                'Avg_mae': np.mean(score_mae),
-                'Mae_median': np.median(score_mae),
                 'Time': time.total_seconds(),
                 'Mape': score_mape,
                 'Mae': score_mae
             }
+            try:
+                score_dict['Avg_mae'] = np.mean(score_mae)
+                score_dict['Avg_mape'] = np.mean(score_mape)
+                score_dict['Mae_median'] = np.median(score_mae)
+                score_dict['Mape_median'] = np.median(score_mape)
+            except:
+                LOGGER.warning('Scores have None values')
+                score_dict['Avg_mae'] = 'Value error: None score'
+                score_dict['Avg_mape'] = 'Value error: None score'
+                score_dict['Mae_median'] = 'Value error: None score'
+                score_dict['Mape_median'] = 'Value error: None score'
             with open(
                 f'valid_results/{dataset.name}/window/'
                 f'{decomposition.name}/'

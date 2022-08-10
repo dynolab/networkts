@@ -53,13 +53,14 @@ def main(cfg: DictConfig) -> None:
         decomposition = instantiate(cfg.decomposition)
 
         for train_size in [1000, 2000, 3000, 4000, 5000]:
+            LOGGER.info(f'Window size = {train_size}')
             score_mape = []
             score_mae = []
             time = datetime.now()
             for i, feature in enumerate(list(G.nodes)):
                 neighbors = list(G.neighbors(feature))
                 if len(neighbors):
-                    print(f'{i+1}/{df.shape[1]}')
+                    LOGGER.info(f'{i+1}/{df.shape[1]}, {feature} node')
                     cols = np.array([feature] + neighbors).astype(str)
                     data = df[cols]
 
@@ -90,6 +91,7 @@ def main(cfg: DictConfig) -> None:
                     score_mape += t1.tolist()
                     score_mae += t2.tolist()
                 else:
+                    LOGGER.warning(f"Node {feature} doesn't have neighbors")
                     continue
             
             time = datetime.now() - time
@@ -98,14 +100,21 @@ def main(cfg: DictConfig) -> None:
             score_mape = np.array(score_mape).reshape(-1)
 
             score_dict = {
-                'Avg_mape': np.mean(score_mape),
-                'Mape_median': np.median(score_mape),
-                'Avg_mae': np.mean(score_mae),
-                'Mae_median': np.median(score_mae),
                 'Time': time.total_seconds(),
                 'Mape': score_mape,
                 'Mae': score_mae
             }
+            try:
+                score_dict['Avg_mae'] = np.mean(score_mae)
+                score_dict['Avg_mape'] = np.mean(score_mape)
+                score_dict['Mae_median'] = np.median(score_mae)
+                score_dict['Mape_median'] = np.median(score_mape)
+            except:
+                LOGGER.warning('Scores have None values')
+                score_dict['Avg_mae'] = 'Value error: None score'
+                score_dict['Avg_mape'] = 'Value error: None score'
+                score_dict['Mae_median'] = 'Value error: None score'
+                score_dict['Mape_median'] = 'Value error: None score'
             with open(
                 f'valid_results/{dataset.name}/window/'
                 f'{decomposition.name}/'
