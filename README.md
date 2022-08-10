@@ -17,7 +17,7 @@ If you want to update the `networkts` package to have the most fresh, please fir
 
 ## Configuration
 
-The package is intended to be used within a hydra application. Check [config examples](/examples/config) and a [hydra application examples](/examples/hydra_applications).
+The package is intended to be used within a `hydra` application. Check [config examples](/examples/config) and a [hydra application examples](/examples/hydra_applications).
 
 # Datasets
 
