@@ -22,6 +22,7 @@ class TotemDataset(Dataset):
                     delta_time: int,
                     period: int,
                     name: str,
+                    rescale: int,
                     ):
         root = os.path.normpath(root)
         G = nx.read_adjlist(os.path.join(
@@ -68,6 +69,7 @@ class TotemDataset(Dataset):
             delta_time=delta_time,
             period=period,
             name=name,
+            rescale=rescale,
         )
         return d
 

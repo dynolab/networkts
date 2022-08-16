@@ -6,3 +6,4 @@ topology_adjlist_file: 'graph.adjlist'
 delta_time: 15
 period: 96
 name: Totem
+rescale: 10

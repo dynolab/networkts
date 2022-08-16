@@ -27,11 +27,10 @@ class NtsXgboost(BaseForecaster):
         y: Timeseries,
     ):
         # y - array with traffic
-        # X - array with temporal features (count of mins)
-        train_x = create_features([time(el) for el in take_time_array(X)])
+        # X - array with temporal features
         self.model = xgb.XGBRegressor(nthread=self.nthread).fit(
-            train_x,
-            as_numpy_array(y),
+            X=as_numpy_array(X),
+            y=as_numpy_array(y),
             verbose=False
         )
         return self
@@ -40,6 +39,5 @@ class NtsXgboost(BaseForecaster):
         self,
         X: Timeseries,
     ):
-        test_x = create_features([time(el) for el in take_time_array(X)])
-        y_pred = self.model.predict(test_x)
+        y_pred = self.model.predict(as_numpy_array(X))
         return y_pred

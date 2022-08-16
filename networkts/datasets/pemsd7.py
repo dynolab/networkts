@@ -31,6 +31,7 @@ class Pemsd7Dataset(Dataset):
                     delta_time: int,
                     period: int,
                     name: str,
+                    rescale: int,
                     ):
         root = os.path.normpath(root)
         G = nx.read_adjlist(os.path.join(
@@ -76,6 +77,7 @@ class Pemsd7Dataset(Dataset):
             n_stations=distances.shape[0],
             delta_time=delta_time,
             period=period,
+            rescale=rescale,
         )
         return d
 

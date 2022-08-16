@@ -38,6 +38,7 @@ class Dataset:
     node_pair_timeseries: NetworkTimeseries = None  # each column corresponds to the name of a pair of nodes
     delta_time: int = None
     period: int = None
+    rescale: int = None
 
     @property
     def node_count(self) -> int:
