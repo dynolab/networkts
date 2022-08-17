@@ -2,7 +2,7 @@ import math
 from datetime import datetime
 
 
-def time(total_minutes):
+def convert_time(total_minutes):
     days = (math.floor(total_minutes / (24*60)) % 7)
     weeks = math.floor(total_minutes / (24*60*7))
     leftover_minutes = total_minutes % (24*60)
