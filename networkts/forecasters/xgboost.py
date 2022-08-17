@@ -12,7 +12,7 @@ class NtsXgboost(BaseForecaster):
 
     def __init__(
         self,
-        nthread: int = 16,
+        nthread: int = 1,
         name: str = "XGB"
     ):
         self.nthread = nthread
