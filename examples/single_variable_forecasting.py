@@ -17,6 +17,8 @@ import networkts
 from networkts.utils.sklearn_helpers import SklearnWrapperForForecaster
 from networkts.utils.sklearn_helpers import build_target_transformer
 from networkts.cross_validation import ValidationBasedOnRollingForecastingOrigin as Valid
+from networkts.utils.create_features import create_features
+from networkts.utils.convert_time import convert_time
 
 
 LOGGER = logging.getLogger(__name__)
@@ -31,11 +33,12 @@ def main(cfg: DictConfig) -> None:
     def forecast():
         dataset = call(cfg.dataset)    
         df = dataset.node_timeseries.data
+        G = dataset.topology
                 
         test_size = 500
-        period = dataset.period
         delta_time = dataset.delta_time
-        df.index = np.array([el*delta_time for el in range(df.shape[0])])   # for pemsd7
+        df.index = np.array([el*delta_time for el in range(df.shape[0])])
+        df.columns = df.columns.values.astype(str)
 
         # setting the low limit for abilene's, totem's traffic
         if dataset.name in ['Abilene', 'Totem']:
@@ -44,11 +47,14 @@ def main(cfg: DictConfig) -> None:
 
         decomposition = instantiate(cfg.decomposition)
 
+        dummy_vars = create_features([convert_time(_) for _ in df.index.values])
+
         for train_size in [1000, 2000, 3000, 4000, 5000]:
+            LOGGER.info(f'Window size = {train_size}')
             score_mape = []
             score_mae = []
             time = datetime.now()
-            for i, feature in enumerate(df.columns.values):
+            for i, feature in enumerate(list(G.nodes)):
                 LOGGER.info(f'{i+1}/{df.shape[1]}, {feature} node')
                 cross_val = Valid(
                                 n_test_timesteps=test_size,
@@ -69,7 +75,7 @@ def main(cfg: DictConfig) -> None:
                 t = cross_val.evaluate(
                                 forecaster=model,
                                 y=df[feature].values,
-                                X=df.index.values
+                                X=dummy_vars.values
                                 )
 
                 t = np.array(t)
@@ -101,7 +107,7 @@ def main(cfg: DictConfig) -> None:
             with open(
                 f'valid_results/{dataset.name}/window/'
                 f'{decomposition.name}/'
-                f'score_{forecaster.name}_{train_size}', 'wb'
+                f'nodes_score_{forecaster.name}_{train_size}', 'wb'
                 ) as file_pi:
                 pickle.dump(score_dict, file_pi)
     forecast()

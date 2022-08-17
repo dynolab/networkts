@@ -18,6 +18,7 @@ from networkts.utils.sklearn_helpers import SklearnWrapperForForecaster
 from networkts.utils.sklearn_helpers import build_target_transformer
 from networkts.cross_validation import ValidationBasedOnRollingForecastingOrigin as Valid
 from networkts.utils.create_dummy_vars import create_dummy_vars
+from networkts.utils.create_dummy_vars import create_xgb_dummy_vars
 
 
 LOGGER = logging.getLogger(__name__)
@@ -47,12 +48,12 @@ def main(cfg: DictConfig) -> None:
 
         G = dataset.topology
 
-        # dummy variables for one hop forecasting
-        dummy_vars = create_dummy_vars(df.index, period)
+        # dummy variables for one hop VAR
+        #dummy_vars = create_dummy_vars(df.index, period)
 
         decomposition = instantiate(cfg.decomposition)
 
-        for train_size in [1000, 2000, 3000, 4000, 5000]:
+        for train_size in [_*1000 for _ in range(1, 6)]:
             LOGGER.info(f'Window size = {train_size}')
             score_mape = []
             score_mae = []
@@ -61,8 +62,12 @@ def main(cfg: DictConfig) -> None:
                 neighbors = list(G.neighbors(feature))
                 if len(neighbors):
                     LOGGER.info(f'{i+1}/{df.shape[1]}, {feature} node')
-                    cols = np.array([feature] + neighbors).astype(str)
+                    cols = np.array(neighbors).astype(str)
                     data = df[cols]
+                    target = df[feature]
+
+                    # dummy variables for one hop XGB
+                    dummy_vars = create_xgb_dummy_vars(data, train_size)
 
                     cross_val = Valid(
                                 n_test_timesteps=test_size,
@@ -82,7 +87,7 @@ def main(cfg: DictConfig) -> None:
                     
                     t = cross_val.evaluate(
                                     forecaster=model,
-                                    y=data.values,
+                                    y=target.values,
                                     X=dummy_vars.values
                                     )
 
@@ -118,7 +123,7 @@ def main(cfg: DictConfig) -> None:
             with open(
                 f'valid_results/{dataset.name}/window/'
                 f'{decomposition.name}/'
-                f'score_{forecaster.name}_{train_size}', 'wb'
+                f'score_M{forecaster.name}_{train_size}', 'wb'
                 ) as file_pi:
                 pickle.dump(score_dict, file_pi)
     
