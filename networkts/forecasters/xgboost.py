@@ -4,9 +4,7 @@ import xgboost as xgb
 import pandas as pd
 
 from networkts.base import BaseForecaster, Timeseries
-from networkts.base import as_numpy_array, take_time_array
-from networkts.utils.convert_time import time
-from networkts.utils.create_features import create_features
+from networkts.base import as_numpy_array
 
 
 class NtsXgboost(BaseForecaster):
