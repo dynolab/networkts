@@ -1,7 +1,7 @@
 import pandas as pd
 
 from networkts.utils.create_features import create_features
-from networkts.utils.convert_time import time
+from networkts.utils.convert_time import convert_time
 
 
 def create_dummy_vars(
@@ -25,7 +25,7 @@ def create_xgb_dummy_vars(
     window_size: int,
 ):
     delta_time = neighbors.index.values[1]-neighbors.index.values[0]
-    inds = [time(_*delta_time) for _ in range(neighbors.shape[0]+window_size)]
+    inds = [convert_time(_*delta_time) for _ in range(neighbors.shape[0]+window_size)]
     dummy_vars = create_features(inds).iloc[window_size:, :]
     dummy_vars.index = neighbors.index
     dummy_vars = pd.concat([neighbors,
