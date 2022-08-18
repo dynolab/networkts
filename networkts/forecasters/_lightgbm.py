@@ -4,8 +4,6 @@ import lightgbm as lgb
 
 from networkts.base import BaseForecaster, Timeseries
 from networkts.base import as_numpy_array
-from networkts.utils.convert_time import time
-from networkts.utils.create_features import create_features
 
 
 class NtsLightgbm(BaseForecaster):
@@ -25,8 +23,6 @@ class NtsLightgbm(BaseForecaster):
         self.num_leaves = num_leaves
         self.num_threads = num_threads
         self.name = name
-        self._y = None
-        self._X = None
         self.params = {
             "objective": "regression",
             "metric": ["mape", "mae"],
@@ -43,9 +39,8 @@ class NtsLightgbm(BaseForecaster):
         y: Timeseries,
     ):
         # y - array with traffic
-        # X - array with temporal features (count of mins)
-        train_x = create_features([time(el) for el in X])
-        train_data = lgb.Dataset(train_x, label=as_numpy_array(y))
+        # X - array with temporal features
+        train_data = lgb.Dataset(as_numpy_array(X), label=as_numpy_array(y))
         self.model = lgb.train(self.params, train_data, self.num_round)
         return self
 
@@ -53,6 +48,5 @@ class NtsLightgbm(BaseForecaster):
         self,
         X: Timeseries,
     ):
-        test_x = create_features([time(el) for el in X])
-        y_pred = self.model.predict(test_x)
+        y_pred = self.model.predict(as_numpy_array(X))
         return y_pred
