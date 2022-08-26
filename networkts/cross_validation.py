@@ -170,7 +170,7 @@ class ValidationBasedOnRollingForecastingOrigin:
             y_pred = forecaster.predict(X=X[test_index])
             yield test_index, y_pred, y[test_index]
 
-    def grid_search(self, forecaster, param_grid, y, X):
+    def grid_search(self, forecaster, param_grid, y, X, verbose=0):
         """
         Iterate over all possible combinations of hyperparameter values,
         evaluate the corresponding forecast models based on the time
@@ -208,7 +208,7 @@ class ValidationBasedOnRollingForecastingOrigin:
                     f'custom_estimator__{k}': v for k, v in param_grid.items()
                     }
 
-        scorer = make_scorer(self.metric, greater_is_better=False)
+        scorer = make_scorer(mae, greater_is_better=False)
         grid = GridSearchCV(
                     forecaster,
                     param_grid,
@@ -216,10 +216,11 @@ class ValidationBasedOnRollingForecastingOrigin:
                     cv=TimeSeriesSplit(
                         n_splits=self.n_splits,
                         test_size=self.n_test_timesteps
-                        )
+                        ),
+                    verbose=verbose,
                     )
         grid.fit(X=X, y=y)
-        return grid.cv_results_
+        return grid
 
     def score(self, y_true, y_pred):
         score = []
