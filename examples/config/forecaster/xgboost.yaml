@@ -1,3 +1,16 @@
 _target_: networkts.forecasters.xgboost.NtsXgboost
 nthread: 16
 name: XGB
+random_state: 123
+learning_rate: 0.3
+max_depth: 6
+gamma: 0
+min_child_weight: 1
+max_delta_step: 0
+subsample: 1
+colsample_bytree: 1
+colsample_bylevel: 1
+colsample_bynode: 1
+reg_lambda: 1
+reg_alpha: 0
+num_parallel_tree: 1
