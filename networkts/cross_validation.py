@@ -226,6 +226,7 @@ class ValidationBasedOnRollingForecastingOrigin:
                         ),
                     verbose=verbose,
                     n_jobs=n_jobs,
+                    pre_dispatch=n_jobs,
                     )
         grid.fit(X=X, y=y)
         return grid
