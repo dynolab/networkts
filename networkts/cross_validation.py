@@ -170,7 +170,15 @@ class ValidationBasedOnRollingForecastingOrigin:
             y_pred = forecaster.predict(X=X[test_index])
             yield test_index, y_pred, y[test_index]
 
-    def grid_search(self, forecaster, param_grid, y, X, verbose=0):
+    def grid_search(
+        self,
+        forecaster,
+        param_grid,
+        y,
+        X,
+        verbose=0,
+        n_jobs=1,
+    ):
         """
         Iterate over all possible combinations of hyperparameter values,
         evaluate the corresponding forecast models based on the time
@@ -217,6 +225,7 @@ class ValidationBasedOnRollingForecastingOrigin:
                         test_size=self.n_test_timesteps
                         ),
                     verbose=verbose,
+                    n_jobs=n_jobs,
                     )
         grid.fit(X=X, y=y)
         return grid
