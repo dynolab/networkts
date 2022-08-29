@@ -16,15 +16,15 @@ class NtsXgboost(BaseForecaster):
     random_state: int or np.random.RandomState = None
     learning_rate: float = 0.3
     max_depth: int = 6
-    gamma = 0
-    min_child_weight = 1
-    max_delta_step = 0
+    gamma: float = 0
+    min_child_weight: float = 1
+    max_delta_step: float = 0
     subsample: float = 1
     colsample_bytree: float = 1
     colsample_bylevel: float = 1
     colsample_bynode : float = 1
-    reg_lambda = 1
-    reg_alpha = 0
+    reg_lambda: float = 1
+    reg_alpha: float = 0
     num_parallel_tree: int = 1
 
 
