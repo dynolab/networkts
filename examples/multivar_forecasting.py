@@ -17,8 +17,8 @@ import networkts
 from networkts.utils.sklearn_helpers import SklearnWrapperForForecaster
 from networkts.utils.sklearn_helpers import build_target_transformer
 from networkts.cross_validation import ValidationBasedOnRollingForecastingOrigin as Valid
-from networkts.utils.create_dummy_vars import create_dummy_vars
-from networkts.utils.create_dummy_vars import create_xgb_dummy_vars
+from networkts.utils.create_dummy_vars import *
+from networkts.decompositions.standard import *
 
 
 LOGGER = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ def main(cfg: DictConfig) -> None:
         period = dataset.period
         delta_time = dataset.delta_time
         
-        df.index = np.array([el*delta_time for el in range(df.shape[0])])
+        df.set_index(np.array([el*delta_time for el in range(df.shape[0])]), inplace=True)
 
         # setting the low limit for abilene's, totem's traffic
         if dataset.name in ['Abilene', 'Totem']:
@@ -49,9 +49,13 @@ def main(cfg: DictConfig) -> None:
         G = dataset.topology
 
         # dummy variables for one hop VAR
-        #dummy_vars = create_dummy_vars(df.index, period)
+        dummy_vars = create_dummy_vars(df.index, period)
 
+        # smoothing
         decomposition = instantiate(cfg.decomposition)
+        if 'log' not in decomposition.name:
+            data = decomposition.transform(np.log(df.values))
+            df = pd.DataFrame(np.exp(data), columns=df.columns, index=df.index)
 
         for train_size in [_*1000 for _ in range(1, 6)]:
             LOGGER.info(f'Window size = {train_size}')
@@ -62,12 +66,13 @@ def main(cfg: DictConfig) -> None:
                 neighbors = list(G.neighbors(feature))
                 if len(neighbors):
                     LOGGER.info(f'{i+1}/{df.shape[1]}, {feature} node')
-                    cols = np.array(neighbors).astype(str)
+                    cols = np.array([feature] + neighbors).astype(str)      # VAR
+                    #cols = np.array(neighbors).astype(str)                 # XGB
                     data = df[cols]
-                    target = df[feature]
+                    #target = df[feature]   # XGB
 
                     # dummy variables for one hop XGB
-                    dummy_vars = create_xgb_dummy_vars(data, train_size)
+                    #dummy_vars = create_xgb_dummy_vars(data, train_size)
 
                     cross_val = Valid(
                                 n_test_timesteps=test_size,
@@ -81,13 +86,14 @@ def main(cfg: DictConfig) -> None:
                     model = build_target_transformer(
                                 TransformedTargetRegressor,
                                 SklearnWrapperForForecaster(forecaster),
-                                func = decomposition.transform,
-                                inverse_func = decomposition.inverse_transform,
+                                func = LogTarget().transform,
+                                inverse_func = LogTarget().inverse_transform,
                                 )
                     
                     t = cross_val.evaluate(
                                     forecaster=model,
-                                    y=target.values,
+                                    y=data.values,          # VAR
+                                    #y=target.values,       # XGB
                                     X=dummy_vars.values
                                     )
 
@@ -120,10 +126,15 @@ def main(cfg: DictConfig) -> None:
                 score_dict['Avg_mape'] = 'Value error: None score'
                 score_dict['Mae_median'] = 'Value error: None score'
                 score_dict['Mape_median'] = 'Value error: None score'
+            
+            directory = f'valid_results/{dataset.name}/window/' + \
+                        f'{decomposition.name}+log/'
+            if not os.path.exists(directory):
+                os.makedirs(directory)
             with open(
-                f'valid_results/{dataset.name}/window/'
-                f'{decomposition.name}/'
-                f'score_M{forecaster.name}_{train_size}', 'wb'
+                os.path.join(directory,
+                            f'score_{forecaster.name}_{train_size}'),
+                'wb'
                 ) as file_pi:
                 pickle.dump(score_dict, file_pi)
     
