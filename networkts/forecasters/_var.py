@@ -84,5 +84,10 @@ class NtsVar(BaseForecaster):
                                     )
         return in_sample
 
+    @classmethod
     def summary(self):
         return self._model.summary()
+
+    @classmethod
+    def get_model_coeff(self):
+        return self._model.params[1:, :]
