@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import os
 import logging
+from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
@@ -49,6 +50,8 @@ class Pemsd7Dataset(Dataset):
                                   speeds_file
                                 ),
                                 header=None)
+        speeds_df.index = [ (datetime.fromisoformat('2012-05-01 00:00:00') + timedelta(minutes=5*i)).strftime("%Y-%m-%d %H:%M:%S")
+                            for i in range(speeds_df.shape[0])]
 #        conf = CONF['datasets']['pemsd7']
 #        root = os.path.normpath(conf['root'])
 #        G = nx.read_adjlist(os.path.join(
