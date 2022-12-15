@@ -89,3 +89,7 @@ class NtsVar(BaseForecaster):
 
     def get_model_coeff(self):
         return self._model.params[1:, :]
+    
+    def get_conf_int(self, X: Timeseries, alpha: float = 0.05):
+        return self._model.forecast_interval(steps=X.shape[0], alpha=alpha,
+                                            y=self._model.endog, exog_future=X)

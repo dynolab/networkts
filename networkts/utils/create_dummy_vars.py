@@ -1,7 +1,8 @@
 import pandas as pd
+import numpy as np
+from datetime import timedelta
 
 from networkts.utils.create_features import create_features
-from networkts.utils.convert_time import convert_time
 
 
 def create_dummy_vars(
@@ -23,9 +24,10 @@ def create_dummy_vars(
 def create_xgb_dummy_vars(
     neighbors: pd.DataFrame,
     window_size: int,
+    delta_time: int,
 ):
-    delta_time = neighbors.index.values[1]-neighbors.index.values[0]
-    inds = [convert_time(_*delta_time) for _ in range(neighbors.shape[0]+window_size)]
+    inds = [neighbors.index[-1] + timedelta(minutes=i*delta_time) for i in range(1, window_size+1)]
+    inds = np.concatenate([neighbors.index, pd.to_datetime(inds)])
     dummy_vars = create_features(inds).iloc[window_size:, :]
     dummy_vars.index = neighbors.index
     dummy_vars = pd.concat([neighbors,
