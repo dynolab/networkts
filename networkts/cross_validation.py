@@ -102,29 +102,33 @@ class ValidationBasedOnRollingForecastingOrigin:
         self.n_splits = n_splits
         self.max_train_size = max_train_size
 
-    def evaluate(self, forecaster, y, X):
+    def evaluate(self, forecaster, data, dummy_vars, original_data, log):
         """Evaluate the performance of the given forecaster using
         the time series passed via `y` and splitting it into
         training/validation pieces as specified by the constructor.
 
         Parameters
         ----------
-        y : array-like, shape (n_timesteps x n_endo)
-            Time series which will be split into training/validation pieces.
-        X : array-like or function, shape (n_timesteps x n_exo), optional
-            (default=None). Exogeneous time series to adjust to. Can also
-            be understood as a control signal or some externally available
-            information.
+        data:           array-like, shape (n_timesteps x n_endo)
+                        Time series which will be split into training/validation pieces.
+        dummy_vars:     array-like or function, shape (n_timesteps x n_exo), optional
+                        (default=None). Exogeneous time series to adjust to. Can also
+                        be understood as a control signal or some externally available
+                        information.
+        original_data:  array-like, shape (n_timesteps x n_endo)
+                        Time series will be used to calculate score metrics.
+        log:            boolean
+                        Requirement of inverse logarithm transform.
 
         Returns
         -------
         A list of metric values for each split
         """
-        return [self.score(y_true, y_pred)
-                for _, y_pred, y_true in self.prediction_generator(
+        return [self.score(y_true, y_pred, original_data[test_ind], log)
+                for test_ind, y_pred, y_true in self.prediction_generator(
                                                 forecaster,
-                                                y,
-                                                X
+                                                data,
+                                                dummy_vars
                                                 )]
 
     def prediction_generator(self, forecaster, y, X):
@@ -231,17 +235,22 @@ class ValidationBasedOnRollingForecastingOrigin:
         grid.fit(X=X, y=y)
         return grid
 
-    def score(self, y_true, y_pred):
+    def score(self, y_true, y_pred, y_origin=None, log=True):
         score = []
-        if len(y_true.shape) > 1:
-            y_true = y_true[:, 0]
+        if log:
+            y_true = np.exp(y_true)
+            y_pred = np.exp(y_pred)
+        if y_origin is None:
+            y_origin = y_true
+        if len(y_origin.shape) > 1:
+            y_origin = y_origin[:, 0]
         if len(y_pred.shape) > 1:
             y_pred = y_pred[:, 0]
-        y_true = y_true.flatten()
+        y_origin = y_origin.flatten()
         y_pred = y_pred.flatten()
         for m in self.metric:
             try:
-                score.append(m(y_pred=y_pred, y_true=y_true))
+                score.append(m(y_pred=y_pred, y_true=y_origin))
             except:
                 score.append(None)
         return score

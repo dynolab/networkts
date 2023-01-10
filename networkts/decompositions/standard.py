@@ -80,25 +80,32 @@ class ESTarget(object):
         super().__init__()
 
     def transform(self, y):
-        if len(y.shape) < 2:
-            s = ExponentialSmoothing(y).fit(
-                                        smoothing_level=self.smoothing_level,
-                                        optimized=False
-                                        )
-            res = s.fittedvalues
-        else:
-            res = np.empty(y.shape)
-            for j in range(y.shape[1]):
-                s = ExponentialSmoothing(y[:, j]).fit(
-                                        smoothing_level=self.smoothing_level,
-                                        optimized=False
-                                        )
-                res[:, j] = s.fittedvalues
+        alpha = self.smoothing_level
+        fl = False
+        if len(y.shape)==1:
+            y = y.reshape((y.shape[0], 1))
+            fl = True
+        res = np.zeros(y.shape)
+        res[0, :] = y[0, :]
+        for i in range(1, y.shape[0]):
+            res[i, :] = alpha*y[i, :] + (1-alpha)*res[i-1, :]
+        if fl:
+            return res.flatten()
         return res
 
     def inverse_transform(self, y):
-        # do nothing
-        return y
+        alpha = self.smoothing_level
+        fl = False
+        if len(y.shape)==1:
+            y = y.reshape((y.shape[0], 1))
+            fl = True
+        res = np.zeros(y.shape)
+        res[0, :] = y[0, :]
+        for i in range(1, y.shape[0]):
+            res[i, :] = y[i, :]/alpha - (1-alpha)/alpha*y[i-1, :]
+        if fl:
+            return res.flatten()
+        return res
 
 
 class MATarget(object):

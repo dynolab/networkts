@@ -99,7 +99,7 @@ class NtsAutoreg(BaseForecaster):
         return self._model.summary()
 
     def get_conf_int(self, X: Timeseries, alpha: float = 0.05):
-        start = self._model.model._index[-1] + 1
-        end = start + X.shape[0]
+        start = self._model.model._index[-1]
+        end = start + X.shape[0] - 1
         res = self._model.get_prediction(start=start, end=end, exog_oos=X)
         return res.predicted_mean, res.conf_int(alpha=alpha)
